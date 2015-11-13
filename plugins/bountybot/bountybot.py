@@ -114,9 +114,9 @@ class BountyBot:
     # !bb about
     def cbk_about(self, channel, cmd_args):
         message  = "-- Wingspan Bounty Bot --\n"
-        message += "My purpose is to report kills which take place in bounty wormhole systems ^^\n"
-        message += "My code is based upon: https://github.com/slackhq/python-rtmbot\n"
-        message += "You can read my manual at this link: " + BountyConfig.RTFM
+        message += ">My purpose is to report kills which take place in bounty wormhole systems ^^\n"
+        message += ">My code is based upon: https://github.com/farshield/bountybot\n"
+        message += ">You can read my manual at this link: " + BountyConfig.RTFM
         self.talk(channel, message)
     
     # !bb hello
