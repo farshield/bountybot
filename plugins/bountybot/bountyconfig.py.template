@@ -1,0 +1,51 @@
+'''
+Created on 2015-06-27
+
+@author: Valtyr Farshield
+'''
+
+class BountyConfig:
+    """BountyBot Settings"""
+    
+    DEBUG = False         # For development purposes (impacts which channel list to use)
+    REPORT_KILLS = True   # Bounty Bot will report kills in the report channel
+    PM_ENABLED = True     # Allow private messages
+    PG_ENABLED = True     # Allow private groups
+    
+    INTERVAL = 600        # How often should BountyBot check Zkillboard for new kills [seconds]
+    WAIT = 3              # Wait time between retrieving kills from individual systems [seconds]
+    CYCLE = 7             # Cycle of the "limit" parameter of Zkillboard [1, CYCLE] to prevent caching
+
+    SEARCH_RESULTS = 128  # Maximum number of Jcodes to be displayed in the search/generic commands
+    
+    # Bot Manual
+    RTFM = "manual-link-here"
+
+    #-----------------------------------------------------------------------------
+    # Channel IDs
+    
+    # Development
+    CHLIST_DEV = {
+                  "general": "C123ABCDE",
+                  "testing": "C123ABCDE",
+                  "wormhole-sales": "C123ABCDE",
+                  "bountybot-report": "C123ABCDE",
+                  "bountybot-config": "G123ABCDE"
+                  }
+    
+    # Staging
+    CHLIST_STAGE = {
+                    "general": "C123ABCDE",
+                    "testing": "C123ABCDE",
+                    "wormhole-sales": "C123ABCDE",
+                    "bountybot-report": "C123ABCDE",
+                    "bountybot-config": "G123ABCDE"
+                    }
+    #-----------------------------------------------------------------------------
+    
+    @staticmethod
+    def get_channels():
+        if BountyConfig.DEBUG:
+            return BountyConfig.CHLIST_DEV
+        else:
+            return BountyConfig.CHLIST_STAGE
