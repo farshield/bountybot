@@ -121,42 +121,50 @@ class BountyBot:
     
     # !bb hello
     def cbk_hello(self, channel, cmd_args):
-        hi_msg = ["Hello :)", "Hi", "Hey", "Kill all humans!", "Howdy ;)", "Hola =)", "What's up?", "Hey o7", "o/", "o7", "\o"]
+        hi_msg = ["Hello :)", "Hi :P", "Hey", "Kill all humans!", "Howdy ;)", "Hola =)", "What's up?", "Hey o7", "o/", "o7", "\o"]
         self.talk(channel, random.choice(hi_msg))
     
     # !bb check
     def cbk_check(self, channel, cmd_args):
         if len(cmd_args) >= 1:
-            name = cmd_args[0]
+            message_list = []
+            name_list = cmd_args[0:BountyConfig.MAX_PARAMETER]
             
-            # check if the system with the specified name even exists
-            if self.bountydb.valid_wormhole(name):
+            for name in name_list:
+                output_message = ""
                 
-                # display characteristics of the wormhole, too
-                message = self.bountydb.info_jcode(name)
-                self.talk(channel, message)
-                
-                # verify if J-code is in the specific order list
-                wh = self.bountydb.get_jcode(name)
-                if wh != None:
-                    self.talk(channel, str(wh))
-                else:
-                    self.talk(channel, "*{}* not in specific orders list".format(name.upper()))
-                
-                # verify if J-code is in the generic order list
-                match_list = self.bountydb.verify_generic(name)
-                if match_list != []:
-                    message = "*{}* found in generic ".format(name.upper())
+                # check if the system with the specified name even exists
+                if self.bountydb.valid_wormhole(name):
                     
-                    for generic_idx in match_list:
-                        message += "#{} ".format(generic_idx)
+                    # display characteristics of the wormhole, too
+                    output_message = self.bountydb.compact_info_jcode(name) + "\n"
                     
-                    self.talk(channel, message)
+                    # verify if J-code is in the specific order list
+                    wh = self.bountydb.get_jcode(name)
+                    if wh != None:
+                        output_message += ">`Found!` " + str(wh)
+                    else:
+                        output_message += ">*{}* not in specific orders list".format(name.upper())
+                    output_message += "\n"
+                    
+                    # verify if J-code is in the generic order list
+                    match_list = self.bountydb.verify_generic(name)
+                    if match_list != []:
+                        generic_message = ">`Found!` *{}* in generic order(s) ".format(name.upper())
+                        
+                        for generic_idx in match_list:
+                            generic_message += "#{} ".format(generic_idx)
+                        
+                        output_message += generic_message
+                    else:
+                        output_message += ">*{}* not in generic orders list".format(name.upper())
+                        
+                    message_list.append(output_message)
+                
                 else:
-                    self.talk(channel, "*{}* not in generic orders list".format(name.upper()))
+                    message_list.append("'{}' - no such wormhole in Eve database. Recheck the spelling.".format(name))
             
-            else:
-                self.talk(channel, "'{}' - no such wormhole in Eve database. Recheck the spelling.".format(name))
+            self.talk(channel, "\n".join(message_list))  # final message
         
         else:
             self.talk(channel, self.__invalid_arg("check", 1))
@@ -215,9 +223,13 @@ class BountyBot:
     # !bb info
     def cbk_info(self, channel, cmd_args):
         if len(cmd_args) >= 1:
-            name = cmd_args[0]
-            message = self.bountydb.info_jcode(name)
-            self.talk(channel, message)
+            message_list = []
+            
+            name_list = cmd_args[0:BountyConfig.MAX_PARAMETER]
+            for name in name_list:
+                message_list.append(self.bountydb.info_jcode(name))
+            
+            self.talk(channel, "\n".join(message_list))
         else:
             self.talk(channel, self.__invalid_arg("info", 1))
 
@@ -426,9 +438,9 @@ class BountyBot:
         
         if len(jcode_list) > 0:
             for wh in jcode_list:
-                wh_element = "*{}*[C{}]".format(wh.name, wh.whclass)
+                wh_element = "*{}* [C{}]".format(wh.name, wh.whclass)
                 if not wh.watchlist:
-                    wh_element += "*"  # append special character to denote system is not actively watchlisted
+                    wh_element += "~"  # append special character to denote system is not actively watchlisted
                 output_list += [wh_element]
                 
             message = "Specific orders:\n>" + ", ".join(output_list)

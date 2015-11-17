@@ -60,7 +60,7 @@ class Wormhole():
         self.watchlist = watchlist        # should bountybot report kills in system? True/False
         
     def __str__(self):
-        return "*{}*[C{}] - Created: {}, Watchlist: {}, LastKill: {}, Info: *{}*".format(self.name, self.whclass, self.date, self.watchlist, self.lastkillDate, self.comments)
+        return "*{}* [C{}] - Created: {}, Watchlist: {}, LastKill: {}, Info: *{}*".format(self.name, self.whclass, self.date, self.watchlist, self.lastkillDate, self.comments)
 
 class GenericWh():
     def __init__(self, idx, date, description, jcodes):
@@ -70,7 +70,7 @@ class GenericWh():
         self.jcodes = jcodes
         
     def __str__(self):
-        return "Generic#{} [{}] {}".format(self.idx, self.date, self.description)
+        return "Generic *#{}* [{}] {}".format(self.idx, self.date, self.description)
     
 # Bounty Bot main class
 class BountyDb():
@@ -159,7 +159,20 @@ class BountyDb():
             message = self.__epi.info(name) + "\n"
             message += self.__epi.planets(name)
         else:
-            message = "Unknown wormhole name"
+            message = "Unknown wormhole name '{}'".format(name.upper())
+            
+        return message
+    
+    # get overall information on a wormhole
+    def compact_info_jcode(self, name):
+        name = name.upper()                # ignore case
+        sysId = self.__epi.getSysId(name)  # retrieve the solar system Id from Epicenter Database
+        
+        # only if wormhole is in the database
+        if sysId > 0:
+            message = self.__epi.info(name) + ", " + self.__epi.planets(name, display_compact=True)
+        else:
+            message = "Unknown wormhole name '{}'".format(name.upper())
             
         return message
     

@@ -19,7 +19,7 @@ class Epistatic:
         self.info = info
         
     def __str__(self):
-        message = "*{}* - Leads to: {}, Stable Time: {} hrs, Mass/Jump: {} Gg, Max Mass: {} Gg".format(
+        message = "*{}* - Leads to: {}, Stable Time: {} hrs, Mass/Jump: {} kT, Max Mass: {} kT".format(
                    self.static_code, self.wh_class, self.stabletime, self.maxjump, self.maxmass)
         
         if self.info != None:
@@ -37,7 +37,6 @@ class Epiwh:
                   [1, 0, 1, 1, 1, 1, 0, 0, 0],
                   [1, 0, 1, 1, 1, 0, 0, 1, 0]]
     
-    # constructor
     def __init__(self, sysId, name, wh_class, effect, radius, statics, targets, moons, planets, info):
         self.sysId = sysId         # internal Eve Id of system [private]
         self.name = name           # name of the wormhole (ex. J123450)
@@ -52,19 +51,9 @@ class Epiwh:
     
     # pretty print
     def __str__(self):
-        target_list = []
-        for target in self.targets:
-            if target == Epicenter.HS_CODE:
-                target_list.append("HS")
-            elif target == Epicenter.LS_CODE:
-                target_list.append("LS")
-            elif target == Epicenter.NS_CODE:
-                target_list.append("NS")
-            else:
-                target_list.append("C" + str(target))
-
-        output_str = "*{}*[C{}] {}, Radius: {} AU, Moons: {}, Statics: {}".format(self.name, self.wh_class, self.effect, self.radius, self.moons, self.statics)        
+        output_str = "*{}* [C{}] {}, Radius: {} AU, Moons: {}, Statics: {}".format(self.name, self.wh_class, self.effect, self.radius, self.moons, self.statics)        
         
+        target_list = self.__translate_statics()
         if target_list != []:
             output_str += " ("
             output_str += " ".join(target_list)
@@ -75,24 +64,51 @@ class Epiwh:
         
         return output_str
     
+    # convert statics (e.g. B274 Y683 -> HS C4)
+    def __translate_statics(self):
+        target_list = []
+        for target in self.targets:
+            if target == Epicenter.HS_CODE:
+                target_list.append("HS")
+            elif target == Epicenter.LS_CODE:
+                target_list.append("LS")
+            elif target == Epicenter.NS_CODE:
+                target_list.append("NS")
+            else:
+                target_list.append("C" + str(target))
+        return target_list
+    
     # returns a human readable text info on the planets of the current system
     def planet_info(self):
-        output_info = ">Planets - "
+        output_info = ">Planets: "
+        planet_list = []
         
         for idx, planet_type in enumerate(Epiwh.planet_types):
             if self.planets[idx] != 0:
-                output_info += "{}: {}, ".format(planet_type, self.planets[idx])
+                planet_list += ["{}: {}".format(planet_type, self.planets[idx])]
         
-        output_info = output_info[:-2]
+        output_info += ", ".join(planet_list)
         
         # Check if system has perfect P.I.
-        hasPerfectPi = False
-        for planets in Epiwh.perfect_pi:
-            if self.__planet_match(planets):
-                hasPerfectPi = True
+        if self.__has_perfect_pi():
+            output_info += " `Perfect P.I.`"
         
-        if hasPerfectPi:
-            output_info += ". Perfect P.I."
+        return output_info
+    
+    # returns a human readable text info on the planets of the current system
+    def compact_planet_info(self):
+        output_info = "Planets: "
+        planet_list = []
+        
+        for idx, planet_type in enumerate(Epiwh.planet_types):
+            if self.planets[idx] != 0:
+                planet_list += ["{}-{}".format(planet_type[0], self.planets[idx])]
+        
+        output_info += ", ".join(planet_list)
+        
+        # Check if system has perfect P.I.
+        if self.__has_perfect_pi():
+            output_info += " `Perfect P.I.`"
         
         return output_info
     
@@ -103,6 +119,14 @@ class Epiwh:
                 return False
         
         return True
+    
+    # Checks if the current wormhole has perfect P.I.
+    def __has_perfect_pi(self):
+        for planets in Epiwh.perfect_pi:
+            if self.__planet_match(planets):
+                return True
+        
+        return False
     
     # check if this particular wormhole meets the criteria given as parameters
     def matchCrit(self, class_list, effect_list, static_params, radius_list, moon_list, planet_list, planetNr_list):
@@ -292,14 +316,17 @@ class Epicenter():
         return output_info
     
     # Retrieve planet information on a wormhole
-    def planets(self, name):
+    def planets(self, name, display_compact=False):
         try:
             epiwh = next(epiwh for epiwh in self.__epiwhlist if epiwh.name == name)
         except StopIteration:
             epiwh = None
             
         if epiwh != None:
-            output_info = epiwh.planet_info()
+            if display_compact:
+                output_info = epiwh.compact_planet_info()
+            else:
+                output_info = epiwh.planet_info()
         else:
             output_info = "Unknown wormhole"
             
@@ -568,17 +595,7 @@ class Epicenter():
 
 def main():
     # Development purposes
-    
     epi = Epicenter("../../epicenter.db", "wormholes", "statics")
-    
-    result = epi.computeGeneric("C3 non-shattered; static HS; planets 9-100; Unoccupied with at least 9 planets.")
-    print result[0]
-    print result[1]
-    
-#     for jc in result[1]:
-#         print epi.info(jc)
-#         print epi.planets(jc)
-#         print ""
     
 if __name__ == '__main__':
     main()

@@ -17,6 +17,7 @@ class BountyConfig:
     CYCLE = 7             # Cycle of the "limit" parameter of Zkillboard [1, CYCLE] to prevent caching
 
     SEARCH_RESULTS = 128  # Maximum number of Jcodes to be displayed in the search/generic commands
+    MAX_PARAMETER = 8     # Maximum number of parameters for the 'check' and 'info' command
     
     # Bot Manual
     RTFM = "manual-link-here"
