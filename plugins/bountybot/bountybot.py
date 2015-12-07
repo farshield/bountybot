@@ -243,9 +243,10 @@ class BountyBot:
             if len(jcodes) > BountyConfig.SEARCH_RESULTS:
                 message += " Results limited to {}.".format(BountyConfig.SEARCH_RESULTS)
             
-            message += "```"
-            message += " ".join(jcodes[:BountyConfig.SEARCH_RESULTS])
-            message += "```"
+            if len(jcodes) > 0:
+                message += "```"
+                message += " ".join(jcodes[:BountyConfig.SEARCH_RESULTS])
+                message += "```"
                     
             self.talk(channel, message)
         else:

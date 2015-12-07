@@ -5,3 +5,5 @@ env
 bounties.db
 .project
 .pydevproject
+.idea
+venv/
