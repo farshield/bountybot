@@ -17,7 +17,16 @@ class BountyBot:
         self.talk = talk
         
         # Bounty Database initialization
-        self.bountydb = BountyDb("epicenter.db", "bounties.db", "wormholes", "generics", self.report_kill, BountyConfig.INTERVAL, BountyConfig.WAIT, BountyConfig.CYCLE)
+        self.bountydb = BountyDb(
+            "epicenter.db",
+            "bounties.db",
+            "wormholes",
+            "generics",
+            self.report_kill,
+            BountyConfig.INTERVAL,
+            BountyConfig.WAIT,
+            BountyConfig.CYCLE
+        )
         
         # -----------------------------------------------------------------------------
         # Channel Settings
@@ -42,25 +51,68 @@ class BountyBot:
         self.cmd_start = ["!bountybot", "!bounty", "!bb"]
         
         # Command configuration list
-        self.cmd_list = [["help",     self.chlist_all,  self.cbk_help,     [("", "displays this message")]],
-                         ["about",    self.chlist_all,  self.cbk_about,    [("", "displays information about BountyBot and shows link to the manual")]],
-                         ["hello",    self.chlist_all,  self.cbk_hello,    [("", "simple verification which tests if BountyBot is up and running")]],
-                         ["check",    self.chlist_all,  self.cbk_check,    [("<jcode>", "verify if J-code is in the specific or generic orders list")]],
-                         ["list",     self.chlist_all,  self.cbk_list,     [("[generic/jcode/jcode+]", "displays current bounty systems (systems with * symbol have kill reports disabled)")]],
-                         ["generic",  self.chlist_all,  self.cbk_generic,  [("<id>", "displays J-codes associated with generic of specified ID")]],
-                         ["info",     self.chlist_all,  self.cbk_info,     [("<jcode>", "displays characteristics of a wormhole")]],
-                         ["search",   self.chlist_all,  self.cbk_search,   [("<description>", "displays J-codes which match the description")]],
-                         ["static",   self.chlist_all,  self.cbk_static,   [("<code>", "displays information on a static code (ex. D382)")]],
-                         ["add",      self.chlist_cfg,  self.cbk_add,      [("<jcode> <watchlist> <comments>", "add new bounty system to database; <watchlist> must be either true or false"),
-                                                                           ("generic <description>", "add new generic bounty system")]],
-                         ["remove",   self.chlist_cfg,  self.cbk_remove,   [("<jcode>", "remove bounty system from Watch List"),
-                                                                           ("generic <id>", "remove generic bounty system")]],
-                         ["edit",     self.chlist_cfg,  self.cbk_edit,     [("<jcode> <watchlist> [new_comments]", "modify the comments of a specific wormhole; <watchlist> must be either true or false"),
-                                                                           ("generic <id> <new_description>", "modify the description of a generic wormhole")]],
-                         ["destroy",  self.chlist_cfg,  self.cbk_destroy,  [("[generic/jcode]", "CAUTION! removes all [generic/jcode] bounty systems")]],
-                         ["echo",     self.chlist_cfg,  self.cbk_echo,     [("<channel> <message>", "send a message as Bounty Bot")]],
-                         ["announce", self.chlist_cfg,  self.cbk_announce, [("<message>", "make an announcement as Bounty Bot")]]
-                         ]
+        self.cmd_list = [
+            ["help", self.chlist_all, self.cbk_help, [
+                ("", "displays this message")
+            ]],
+            ["about", self.chlist_all, self.cbk_about, [
+                ("", "displays information about BountyBot and shows link to the manual")
+            ]],
+            ["hello", self.chlist_all, self.cbk_hello, [
+                ("", "simple verification which tests if BountyBot is up and running")
+            ]],
+            ["check", self.chlist_all, self.cbk_check, [
+                ("<jcode>", "verify if J-code is in the specific or generic orders list")
+            ]],
+            ["list", self.chlist_all, self.cbk_list, [
+                (
+                    "[generic/jcode/jcode+]",
+                    "displays current bounty systems (systems with * symbol have kill reports disabled)"
+                )
+            ]],
+            ["generic", self.chlist_all, self.cbk_generic, [
+                ("<id>", "displays J-codes associated with generic of specified ID")
+            ]],
+            ["info", self.chlist_all, self.cbk_info, [
+                ("<jcode>", "displays characteristics of a wormhole")
+            ]],
+            ["search", self.chlist_all, self.cbk_search, [
+                ("<description>", "displays J-codes which match the description")
+            ]],
+            ["static", self.chlist_all, self.cbk_static, [
+                ("<code>", "displays information on a static code (ex. D382)")
+            ]],
+            ["add", self.chlist_cfg, self.cbk_add, [
+                (
+                    "<jcode> <watchlist> <comments>",
+                    "add new bounty system to database; <watchlist> must be either true or false"
+                ),
+                ("generic <description>", "add new generic bounty system")
+            ]],
+            ["remove", self.chlist_cfg, self.cbk_remove, [
+                ("<jcode>", "remove bounty system from Watch List"),
+                ("generic <id>", "remove generic bounty system")
+            ]],
+            ["edit", self.chlist_cfg, self.cbk_edit, [
+                (
+                    "<jcode> <watchlist> [new_comments]",
+                    "modify the comments of a specific wormhole; <watchlist> must be either true or false"
+                ),
+                (
+                    "generic <id> <new_description>",
+                    "modify the description of a generic wormhole"
+                )
+            ]],
+            ["destroy", self.chlist_cfg, self.cbk_destroy, [
+                ("[generic/jcode]", "CAUTION! removes all [generic/jcode] bounty systems")
+            ]],
+            ["echo", self.chlist_cfg, self.cbk_echo, [
+                ("<channel> <message>", "send a message as Bounty Bot")
+            ]],
+            ["announce", self.chlist_cfg, self.cbk_announce, [
+                ("<message>", "make an announcement as Bounty Bot")
+            ]],
+        ]
     
     # Command Interpreter
     def process_cmd(self, data):
@@ -80,27 +132,42 @@ class BountyBot:
                         if any(data["channel"].startswith(item) for item in cmd[1]):
                             cmd[2](data["channel"], cmd_args[2:])  # ignore the first 2 arguments
                         else:
-                            self.talk(data["channel"], "Command '{}' can not be executed from this channel".format(cmd_args[1]))
+                            self.talk(
+                                data["channel"],
+                                "Command '{}' can not be executed from this channel".format(cmd_args[1])
+                            )
             
                 if not cmd_found:
                     # command not in list
-                    self.talk(data["channel"], "No such command '{}'. Type '!bb help' from a Bounty Bot channel for more info".format(cmd_args[1]))
+                    self.talk(
+                        data["channel"],
+                        "No such command '{}'. Type '!bb help' from a Bounty Bot channel for more info".format(
+                            cmd_args[1]
+                        )
+                    )
             
             else:
                 # no argument specified
-                self.talk(data["channel"], "Please specify at least one argument. Type '!bb help' from a Bounty Bot channel for more info")
+                self.talk(
+                    data["channel"],
+                    "Please specify at least one argument. Type '!bb help' from a Bounty Bot channel for more info"
+                )
     
     # Report-A-Kill callback
     def report_kill(self, wormhole):
-        message = "{} - Kill detected at {} https://zkillboard.com/system/{}/ Info: {}".format(wormhole.name, wormhole.lastkillDate,
-                                                                                               wormhole.sysId, wormhole.comments)
+        message = "{} - Kill detected at {} https://zkillboard.com/system/{}/ Info: {}".format(
+            wormhole.name,
+            wormhole.lastkillDate,
+            wormhole.sysId,
+            wormhole.comments
+        )
         self.talk(self.ch["bountybot-report"], message)
     
     # -----------------------------------------------------------------------------
     # Command callbacks
        
     # !bb help
-    def cbk_help(self, channel, cmd_args):
+    def cbk_help(self, channel, _):
         message = "Commands may start with one of the following: "
         message += "  ".join(self.cmd_start) + "\n"
         
@@ -108,21 +175,25 @@ class BountyBot:
             # Only display commands which can be executed from current channel
             if any(channel.startswith(item) for item in cmd[1]):
                 for cmd_flavour in cmd[3]:
-                    message += ">`" + self.cmd_start[0] + " " + cmd[0] + " " + cmd_flavour[0] + "`  -- " + cmd_flavour[1] + "\n"
+                    message += ">`" + self.cmd_start[0] + " " + cmd[0] + " " + cmd_flavour[0] + "`  -- " + \
+                               cmd_flavour[1] + "\n"
 
         self.talk(channel, message)
     
     # !bb about
-    def cbk_about(self, channel, cmd_args):
-        message  = "-- Wingspan Bounty Bot --\n"
+    def cbk_about(self, channel, _):
+        message = "-- Wingspan Bounty Bot --\n"
         message += ">My purpose is to report kills which take place in bounty wormhole systems ^^\n"
         message += ">My code is based upon: https://github.com/farshield/bountybot\n"
         message += ">You can read my manual at this link: " + BountyConfig.RTFM
         self.talk(channel, message)
     
     # !bb hello
-    def cbk_hello(self, channel, cmd_args):
-        hi_msg = ["Hello :)", "Hi :P", "Hey", "Kill all humans!", "Howdy ;)", "Hola =)", "What's up?", "Hey o7", "o/", "o7", "\o"]
+    def cbk_hello(self, channel, _):
+        hi_msg = [
+            "Hello :)", "Hi :P", "Hey", "Kill all humans!", "Howdy ;)", "Hola =)", "What's up?", "Hey o7",
+            "o/", "o7", "\o", "Hey, buddy"
+        ]
         self.talk(channel, random.choice(hi_msg))
     
     # !bb check
@@ -132,8 +203,6 @@ class BountyBot:
             name_list = cmd_args[0:BountyConfig.MAX_PARAMETER]
             
             for name in name_list:
-                output_message = ""
-                
                 # check if the system with the specified name even exists
                 if self.bountydb.valid_wormhole(name):
                     
@@ -142,7 +211,7 @@ class BountyBot:
                     
                     # verify if J-code is in the specific order list
                     wh = self.bountydb.get_jcode(name)
-                    if wh != None:
+                    if wh is not None:
                         output_message += ">`Found!` " + str(wh)
                     else:
                         output_message += ">*{}* not in specific orders list".format(name.upper())
@@ -150,7 +219,7 @@ class BountyBot:
                     
                     # verify if J-code is in the generic order list
                     match_list = self.bountydb.verify_generic(name)
-                    if match_list != []:
+                    if match_list:
                         generic_message = ">`Found!` *{}* in generic order(s) ".format(name.upper())
                         
                         for generic_idx in match_list:
@@ -173,16 +242,16 @@ class BountyBot:
     # !bb list
     def cbk_list(self, channel, cmd_args):
         if len(cmd_args) == 0:
-            message = self.__list_generic(channel)
+            message = self.__list_generic()
             message += "\n"
-            message += self.__list_jcode(channel)
+            message += self.__list_jcode()
         else:
             if cmd_args[0].lower() in ["generic", "generics"]:
-                message = self.__list_generic(channel)
+                message = self.__list_generic()
             elif cmd_args[0].lower() in ["jcode", "jcodes"]:
-                message = self.__list_jcode(channel)
+                message = self.__list_jcode()
             elif cmd_args[0].lower() in ["jcode+", "jcodes+"]:
-                message = self.__list_jcode_detail(channel)
+                message = self.__list_jcode_detail()
             else:
                 message = self.__cmd_error("list", "2nd argument must be either 'generic', 'jcode' or 'jcode+'")
         
@@ -198,7 +267,7 @@ class BountyBot:
                 idx = int(idx)
                 jcodes = self.bountydb.generic_jcodes(idx)
                 if jcodes is not None:
-                    if jcodes != []:
+                    if jcodes:
                         message = "Matches: {}.".format(len(jcodes))
                         
                         if len(jcodes) > BountyConfig.SEARCH_RESULTS:
@@ -290,7 +359,10 @@ class BountyBot:
                     else:
                         message = self.__cmd_error("add", "2nd argument 'watchlist' must be either true or false")
                 else:
-                    message = self.__cmd_error("add", "at least 3 arguments have to be specified when adding a specific wormhole")
+                    message = self.__cmd_error(
+                        "add",
+                        "at least 3 arguments have to be specified when adding a specific wormhole"
+                    )
         
             # display result of operation
             self.talk(channel, message)
@@ -356,7 +428,7 @@ class BountyBot:
                 
                 comments = " ".join(cmd_args[2:])
                 
-                if watchlist != None:
+                if watchlist is not None:
                     message = self.bountydb.edit_jcode(name, watchlist, comments)
                 else:
                     message = self.__cmd_error("edit", "2nd argument 'watchlist' must be either true or false")
@@ -414,14 +486,16 @@ class BountyBot:
     
     # Called when a command has incorrect number arguments
     def __invalid_arg(self, cmd_name, nr_args):
-        return "Command '{}' not called correctly: at least {} additional argument(s) has(have) to be specified".format(cmd_name, nr_args)
-    
+        return "Command '{}' not called correctly: at least {} additional argument(s) has(have) to be specified".format(
+            cmd_name, nr_args
+        )
+
     # Called when a command does not have valid arguments
     def __cmd_error(self, cmd_name, msg):
         return "Error executing '{}': {}".format(cmd_name, msg)
     
     # List only generic wormholes
-    def __list_generic(self, channel):
+    def __list_generic(self):
         message = "Generic orders:\n"
         generic_list = self.bountydb.list_generic()
         
@@ -434,7 +508,7 @@ class BountyBot:
         return message
     
     # List short J-codes
-    def __list_jcode(self, channel):
+    def __list_jcode(self):
         output_list = []
         jcode_list = self.bountydb.list_jcode()
         
@@ -452,7 +526,7 @@ class BountyBot:
         return message
     
     # List J-codes with details
-    def __list_jcode_detail(self, channel):
+    def __list_jcode_detail(self):
         message = ""
         jcode_list = self.bountydb.list_jcode()
         
