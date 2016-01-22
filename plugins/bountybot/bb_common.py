@@ -1,12 +1,17 @@
-'''
+"""
 Created on 2015-07-05
 
 @author: Valtyr Farshield
-'''
+"""
 
-class BbCommon():
+
+class BbCommon:
+
+    def __init__(self):
+        pass
+
     @staticmethod
-    def representsFloat(s):
+    def represents_float(s):
         # verifies if the string s is a float
         try:
             float(s)
@@ -15,7 +20,7 @@ class BbCommon():
             return False
 
     @staticmethod
-    def representsInt(s):
+    def represents_int(s):
         # verifies if the string s is a number
         try:
             int(s)

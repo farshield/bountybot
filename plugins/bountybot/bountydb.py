@@ -1,8 +1,8 @@
-'''
+"""
 Created on 2015-05-11
 
 @author: Valtyr Farshield
-'''
+"""
 
 import time
 import urllib2
@@ -15,8 +15,12 @@ from epicenter import Epicenter
 from StringIO import StringIO
 from bountyconfig import BountyConfig
 
-# Zkillboard handler
+
 class Zkb():
+    """
+    Zkillboard Handling Class
+    """
+
     @staticmethod
     def lastkill(solarSystemID, limit = 1):
         headers = { "User-Agent" : "Wingspan Bounty Bot, Mail: valtyr.farshield@gmail.com",

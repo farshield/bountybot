@@ -1,13 +1,14 @@
-'''
+"""
 Created on 2015-06-06
 
 @author: Valtyr Farshield
-'''
+"""
 
 from bountybot import BountyBot
 
 crontable = []
 outputs = []
+
 
 # Sends a message to a specified Slack channel
 def talk(channel, message):
@@ -22,5 +23,5 @@ def process_hello(data):
 
 # Event - message received
 def process_message(data):
-    #print data["channel"], data["text"]
+    # print data["channel"], data["text"]
     bb.process_cmd(data)

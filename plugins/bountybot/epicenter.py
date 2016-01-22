@@ -1,13 +1,13 @@
-'''
+"""
 Created on 2015-05-30
 
 @author: Valtyr Farshield
-'''
+"""
 
 import re
 import sqlite3 as lite
-
 from bb_common import BbCommon
+
 
 class Epistatic:
     def __init__(self, static_code, wh_class, stabletime, maxjump, maxmass, info):
@@ -26,6 +26,7 @@ class Epistatic:
             message += ", Info: {}".format(self.info)
         
         return message
+
 
 class Epiwh:
     planet_types = ["Temperate", "Ice", "Gas", "Oceanic", "Lava", "Barren", "Storm", "Plasma", "Shattered"]
@@ -54,7 +55,7 @@ class Epiwh:
         output_str = "*{}* [C{}] {}, Radius: {} AU, Moons: {}, Statics: {}".format(self.name, self.wh_class, self.effect, self.radius, self.moons, self.statics)        
         
         target_list = self.__translate_statics()
-        if target_list != []:
+        if target_list:
             output_str += " ("
             output_str += " ".join(target_list)
             output_str += ")"
@@ -135,19 +136,19 @@ class Epiwh:
         if self.wh_class in class_list:
             
             # process effect
-            if effect_list != []:
+            if effect_list:
                 if self.effect not in effect_list:
                     return False
             
             # process statics
-            if static_params != []:
+            if static_params:
                 static_list = static_params[0]
                 exclude = static_params[1]
                 
-                if static_list != []:
+                if static_list:
                     
-                    if exclude == True:
-                        # exclude
+                    if exclude:
+                        # exclude keyword detected
                         for static in static_list[0]:
                             if static in self.targets:
                                 return False
@@ -158,18 +159,18 @@ class Epiwh:
                             if set(statics) <= set(self.targets):
                                 found = True
                         
-                        if found == False:
+                        if not found:
                             return False
             
             # process radius
-            if radius_list != []:
+            if radius_list:
                 min_rad = radius_list[0]
                 max_rad = radius_list[1]
                 if self.radius > max_rad or self.radius < min_rad:
                     return False
             
             # process moons
-            if moon_list != []:
+            if moon_list:
                 min_moons = moon_list[0]
                 max_moons = moon_list[1]
                 
@@ -177,7 +178,7 @@ class Epiwh:
                     return False
             
             # process number of planets
-            if planetNr_list != []:
+            if planetNr_list:
                 planets_nr = sum(self.planets)
                 min_planets = planetNr_list[0]
                 max_planets = planetNr_list[1]
@@ -186,14 +187,14 @@ class Epiwh:
                     return False
                 
             # process planets
-            if planet_list != []:
+            if planet_list:
                 found = False
                 
                 for planets in planet_list:
                     if self.__planet_match(planets):
                         found = True
                         
-                if found == False:
+                if not found:
                     return False
             
             # everything checked out, return True
@@ -203,7 +204,8 @@ class Epiwh:
             # Wormhole class does not match
             return False
 
-class Epicenter():
+
+class Epicenter:
     Delimiter = ";"
     HS_CODE = 100
     LS_CODE = 200
@@ -222,7 +224,7 @@ class Epicenter():
         self.db_con = lite.connect(self.db_name)
         self.cursor = self.db_con.cursor()
         
-        #-----------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------
         # load statics data
         statement = "SELECT * FROM {}".format(self.table_statics)
             
@@ -231,7 +233,7 @@ class Epicenter():
             epix = Epistatic(row[0], row[1], int(row[2]), int(row[3]), int(row[4]), row[5])
             self.__epistatics.append(epix)
         
-        #-----------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------
         # load wormhole data
         statement = """SELECT SysId, Name, Class, Effect, Radius, Statics, Moons,
             Temperate, Ice, Gas, Oceanic, Lava, Barren, Storm, Plasma, Shattered, Info FROM {}""".format(self.table_wh)
@@ -275,7 +277,6 @@ class Epicenter():
     
     # Get the class of the wormhole
     def getClass(self, name):
-        wh_class = 0
         try:
             wh_class = next(epiwh for epiwh in self.__epiwhlist if epiwh.name == name).wh_class
         except StopIteration:
@@ -337,9 +338,9 @@ class Epicenter():
         # closing database
         self.db_con.close()
 
-    #-----------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
     # Generic Stuff
-    #-----------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
 
     # Compute integer range (e.g. 4-10)
     def __computeIntRange(self, text):
@@ -351,7 +352,7 @@ class Epicenter():
             min_str = matchObj.group(1)
             max_str = matchObj.group(2)
 
-            if BbCommon.representsInt(min_str) and BbCommon.representsInt(max_str):
+            if BbCommon.represents_int(min_str) and BbCommon.represents_int(max_str):
                 min_nr = int(min_str)
                 max_nr = int(max_str)
         
@@ -371,7 +372,7 @@ class Epicenter():
             min_str = matchObj.group(1)
             max_str = matchObj.group(2)
 
-            if BbCommon.representsFloat(min_str) and BbCommon.representsFloat(max_str):
+            if BbCommon.represents_float(min_str) and BbCommon.represents_float(max_str):
                 min_nr = float(min_str)
                 max_nr = float(max_str)
         
@@ -381,7 +382,7 @@ class Epicenter():
         else:
             return []
 
-    #-----------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
     # Compute effects
     def __computeEffects(self, text):
         effect_local = ["black hole", "cataclysmic", "magnetar", "no effect", "pulsar", "red giant", "wolf-rayet"]
@@ -423,7 +424,7 @@ class Epicenter():
             for wh_class in class_text:
                 sub_list.append(int(wh_class))
             
-            if sub_list != []:
+            if sub_list:
                 static_list.append(sub_list)
         
         return [static_list, exclude]
@@ -477,7 +478,7 @@ class Epicenter():
     def __computeNrPlanets(self, text):
         return self.__computeIntRange(text)
     
-    #-----------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
     # Compute jcodes from a generic order
     def computeGeneric(self, text):
         jcodes = []       # the output
@@ -510,7 +511,7 @@ class Epicenter():
             
             # determine if a shattered wormhole is wanted
             if "non-shattered" in groups[0]:
-                moon_list = [1,1000]
+                moon_list = [1, 1000]
             elif "shattered" in groups[0]:
                 moon_list = [0, 0]
         
@@ -521,30 +522,30 @@ class Epicenter():
                 
                 # effect group
                 if any(substr in group for substr in ["effect", "effects"]):
-                    if effect_list == []:
+                    if not effect_list:
                         effect_list = self.__computeEffects(group)
                 
                 # statics group
                 elif any(substr in group for substr in ["static", "statics"]):
-                    if static_params == []:
+                    if not static_params:
                         static_params = self.__computeStatics(group)
                 
                 # radius group (min, max) - default 'min'
                 elif any(substr in group for substr in ["radius", "size"]):
-                    if radius_list == []:
+                    if not radius_list:
                         radius_list = self.__computeRadius(group)
                 
                 # planets group
                 elif any(substr in group for substr in ["planet", "planets", "p.i."]):
-                    if planet_list == []:
+                    if not planet_list:
                         planet_list = self.__computePlanets(group)
                     
-                    if planetNr_list == []:
+                    if not planetNr_list:
                         planetNr_list = self.__computeNrPlanets(group)
                 
                 # nr. of moons group (min, max, exact) - default 'exact'
                 elif any(substr in group for substr in ["moon", "moons"]):
-                    if moon_list == []:
+                    if not moon_list:
                         moon_list = self.__computeNrMoons(group)
                 
                 # nothing found, must be a comment?
@@ -558,22 +559,22 @@ class Epicenter():
         
         # determine which user input has been given consideration
         processed = []
-        if class_list == []:
+        if not class_list:
             processed.append("none")
         else:
             processed.append("class")
-            if effect_list != []:
+            if effect_list:
                 processed.append("effects")
-            if static_params != []:
-                if static_params[0] != []:
+            if static_params:
+                if static_params[0]:
                     processed.append("statics")
-            if radius_list != []:
+            if radius_list:
                 processed.append("radius")
-            if moon_list != []:
+            if moon_list:
                 processed.append("moons")
-            if planet_list != []:
+            if planet_list:
                 processed.append("planets")
-            if planetNr_list != []:
+            if planetNr_list:
                 processed.append("planet numbers")
         
         # construct result message
@@ -592,6 +593,7 @@ class Epicenter():
 #         print "Nr. Planets:", planetNr_list
         
         return [result_info, jcodes]
+
 
 def main():
     # Development purposes

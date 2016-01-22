@@ -1,14 +1,15 @@
-'''
+"""
 Created on 2015-06-06
 
 @author: Valtyr Farshield
-'''
+"""
 
 import random
 
 from bountydb import BountyDb
 from bountyconfig import BountyConfig
 from bb_common import BbCommon
+
 
 class BountyBot:
     def __init__(self, talk):
@@ -18,7 +19,7 @@ class BountyBot:
         # Bounty Database initialization
         self.bountydb = BountyDb("epicenter.db", "bounties.db", "wormholes", "generics", self.report_kill, BountyConfig.INTERVAL, BountyConfig.WAIT, BountyConfig.CYCLE)
         
-        #-----------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------
         # Channel Settings
         self.ch = BountyConfig.get_channels()
         
@@ -34,7 +35,7 @@ class BountyBot:
         if BountyConfig.PG_ENABLED:
             self.chlist_all += "G"
         
-        #-----------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------
         # Command section
         
         # Each command starts with one of the following prefixes:
@@ -95,7 +96,7 @@ class BountyBot:
                                                                                                wormhole.sysId, wormhole.comments)
         self.talk(self.ch["bountybot-report"], message)
     
-    #-----------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
     # Command callbacks
        
     # !bb help
@@ -192,11 +193,11 @@ class BountyBot:
         if len(cmd_args) >= 1:
             idx = cmd_args[0]
             
-            if BbCommon.representsInt(idx):
-                #-----------------------------------------------------------------------------
+            if BbCommon.represents_int(idx):
+                # -----------------------------------------------------------------------------
                 idx = int(idx)
                 jcodes = self.bountydb.generic_jcodes(idx)
-                if jcodes != None:
+                if jcodes is not None:
                     if jcodes != []:
                         message = "Matches: {}.".format(len(jcodes))
                         
@@ -211,7 +212,7 @@ class BountyBot:
                         message = "Generic #{} has no associated J-codes".format(idx)
                 else:
                     message = "Generic #{} is not in list".format(idx)
-                #-----------------------------------------------------------------------------
+                # -----------------------------------------------------------------------------
             else:
                 message = self.__cmd_error("generic", "'{}' is not a number".format(idx))
                 
@@ -284,7 +285,7 @@ class BountyBot:
                     
                     comments = " ".join(cmd_args[2:])
                     
-                    if watchlist != None:
+                    if watchlist is not None:
                         message = self.bountydb.add_jcode(name, watchlist, comments)
                     else:
                         message = self.__cmd_error("add", "2nd argument 'watchlist' must be either true or false")
@@ -304,7 +305,7 @@ class BountyBot:
             if cmd_args[0].lower() == "generic":
                 if len(cmd_args) >= 2:
                     idx = cmd_args[1]
-                    if BbCommon.representsInt(idx):
+                    if BbCommon.represents_int(idx):
                         idx = int(idx)
                         message = self.bountydb.remove_generic(idx)
                     else:
@@ -331,7 +332,7 @@ class BountyBot:
             if cmd_args[0].lower() == "generic":
                 if len(cmd_args) >= 3:
                     idx = cmd_args[1]
-                    if BbCommon.representsInt(idx):
+                    if BbCommon.represents_int(idx):
                         idx = int(idx)
                         description = " ".join(cmd_args[2:])
                         [message, result_info] = self.bountydb.edit_generic(idx, description)
@@ -408,7 +409,7 @@ class BountyBot:
         else:
             self.talk(channel, self.__invalid_arg("announce", 1))
     
-    #-----------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
     # Helper functions
     
     # Called when a command has incorrect number arguments
@@ -463,7 +464,7 @@ class BountyBot:
             
         return message
     
-    #-----------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
     # Development purposes

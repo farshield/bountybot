@@ -1,8 +1,9 @@
-'''
+"""
 Created on 2015-06-27
 
 @author: Valtyr Farshield
-'''
+"""
+
 
 class BountyConfig:
     """BountyBot Settings"""
@@ -22,7 +23,7 @@ class BountyConfig:
     # Bot Manual
     RTFM = "manual-link-here"
 
-    #-----------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------
     # Channel IDs
     
     # Development
@@ -42,8 +43,11 @@ class BountyConfig:
                     "bountybot-report": "C123ABCDE",
                     "bountybot-config": "G123ABCDE"
                     }
-    #-----------------------------------------------------------------------------
-    
+    # -----------------------------------------------------------------------------
+
+    def __init__(self):
+        pass
+
     @staticmethod
     def get_channels():
         if BountyConfig.DEBUG:
