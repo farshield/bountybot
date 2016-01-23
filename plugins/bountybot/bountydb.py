@@ -328,6 +328,10 @@ class BountyDb():
     # wrapper for Epicenter's static code information function
     def search_static(self, static_code):
         return self.__epi.getStatic(static_code)
+
+    # wrapper for Epicenter's static mass information function
+    def static_mass(self, static_code):
+        return self.__epi.static_mass(static_code)
     
     # get information on a specific wormhole (if present in whlist)
     def get_jcode(self, name):

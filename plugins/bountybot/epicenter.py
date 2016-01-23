@@ -292,6 +292,15 @@ class Epicenter:
                 return str(epistatic)
             
         return "Code '{}' not found in database".format(static_code)
+
+    # Get mass of a static code
+    def static_mass(self, static_code):
+        static_code = static_code.upper()
+        for epistatic in self.__epistatics:
+            if static_code == epistatic.static_code:
+                return [float(epistatic.maxmass), float(epistatic.maxjump)]
+
+        return [0, 0]
     
     # Find out the target system of the static code
     def convertStatic(self, static_code):

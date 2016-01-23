@@ -9,13 +9,14 @@ import random
 from bountydb import BountyDb
 from bountyconfig import BountyConfig
 from bb_common import BbCommon
+from masscalc.whmanager import WhManager
 
 
 class BountyBot:
     def __init__(self, talk):
         # Slackbot output function
         self.talk = talk
-        
+
         # Bounty Database initialization
         self.bountydb = BountyDb(
             "epicenter.db",
@@ -27,7 +28,8 @@ class BountyBot:
             BountyConfig.WAIT,
             BountyConfig.CYCLE
         )
-        
+        whmanager = WhManager(self)
+
         # -----------------------------------------------------------------------------
         # Channel Settings
         self.ch = BountyConfig.get_channels()
@@ -82,6 +84,7 @@ class BountyBot:
             ["static", self.chlist_all, self.cbk_static, [
                 ("<code>", "displays information on a static code (ex. D382)")
             ]],
+            # -----------------------------------------------------------------------------
             ["add", self.chlist_cfg, self.cbk_add, [
                 (
                     "<jcode> <watchlist> <comments>",
@@ -111,6 +114,23 @@ class BountyBot:
             ]],
             ["announce", self.chlist_cfg, self.cbk_announce, [
                 ("<message>", "make an announcement as Bounty Bot")
+            ]],
+            # -----------------------------------------------------------------------------
+            ["spawn", self.chlist_all, whmanager.cbk_spawn, [
+                ("", "view spawned wormholes in current channel"),
+                ("<sig> <type> <state>", "spawn a wormhole")
+            ]],
+            ["splash", self.chlist_all, whmanager.cbk_splash, [
+                ("<sig> <ship_mass>", "splash a wormhole with specified ship mass"),
+            ]],
+            ["shrink", self.chlist_all, whmanager.cbk_shrink, [
+                ("<sig>", "report when wormhole shrinks"),
+            ]],
+            ["collapse", self.chlist_all, whmanager.cbk_collapse, [
+                ("<sig>", "remove wormhole from channel"),
+            ]],
+            ["chance", self.chlist_all, whmanager.cbk_chance, [
+                ("<sig> <ship_mass>", "compute probability of wormhole collapse with specified ship mass"),
             ]],
         ]
     
@@ -237,7 +257,7 @@ class BountyBot:
             self.talk(channel, "\n".join(message_list))  # final message
         
         else:
-            self.talk(channel, self.__invalid_arg("check", 1))
+            self.talk(channel, BountyBot.invalid_arg("check", 1))
 
     # !bb list
     def cbk_list(self, channel, cmd_args):
@@ -253,7 +273,7 @@ class BountyBot:
             elif cmd_args[0].lower() in ["jcode+", "jcodes+"]:
                 message = self.__list_jcode_detail()
             else:
-                message = self.__cmd_error("list", "2nd argument must be either 'generic', 'jcode' or 'jcode+'")
+                message = BountyBot.cmd_error("list", "2nd argument must be either 'generic', 'jcode' or 'jcode+'")
         
         self.talk(channel, message)
 
@@ -283,12 +303,12 @@ class BountyBot:
                     message = "Generic #{} is not in list".format(idx)
                 # -----------------------------------------------------------------------------
             else:
-                message = self.__cmd_error("generic", "'{}' is not a number".format(idx))
+                message = BountyBot.cmd_error("generic", "'{}' is not a number".format(idx))
                 
             # display result of operation
             self.talk(channel, message)
         else:
-            self.talk(channel, self.__invalid_arg("generic", 1))
+            self.talk(channel, BountyBot.invalid_arg("generic", 1))
 
     # !bb info
     def cbk_info(self, channel, cmd_args):
@@ -301,7 +321,7 @@ class BountyBot:
             
             self.talk(channel, "\n".join(message_list))
         else:
-            self.talk(channel, self.__invalid_arg("info", 1))
+            self.talk(channel, BountyBot.invalid_arg("info", 1))
 
     # !bb search
     def cbk_search(self, channel, cmd_args):
@@ -320,7 +340,7 @@ class BountyBot:
                     
             self.talk(channel, message)
         else:
-            self.talk(channel, self.__invalid_arg("search", 1))
+            self.talk(channel, BountyBot.invalid_arg("search", 1))
 
     # !bb static
     def cbk_static(self, channel, cmd_args):
@@ -329,7 +349,7 @@ class BountyBot:
             message = self.bountydb.search_static(static_code)
             self.talk(channel, message)
         else:
-            self.talk(channel, self.__invalid_arg("static", 1))
+            self.talk(channel, BountyBot.invalid_arg("static", 1))
 
     # !bb add
     def cbk_add(self, channel, cmd_args):
@@ -357,9 +377,9 @@ class BountyBot:
                     if watchlist is not None:
                         message = self.bountydb.add_jcode(name, watchlist, comments)
                     else:
-                        message = self.__cmd_error("add", "2nd argument 'watchlist' must be either true or false")
+                        message = BountyBot.cmd_error("add", "2nd argument 'watchlist' must be either true or false")
                 else:
-                    message = self.__cmd_error(
+                    message = BountyBot.cmd_error(
                         "add",
                         "at least 3 arguments have to be specified when adding a specific wormhole"
                     )
@@ -368,7 +388,7 @@ class BountyBot:
             self.talk(channel, message)
             print "[Op] Add:", message
         else:
-            self.talk(channel, self.__invalid_arg("add", 2))
+            self.talk(channel, BountyBot.invalid_arg("add", 2))
     
     # !bb remove
     def cbk_remove(self, channel, cmd_args):
@@ -381,9 +401,9 @@ class BountyBot:
                         idx = int(idx)
                         message = self.bountydb.remove_generic(idx)
                     else:
-                        message = self.__cmd_error("remove", "'{}' is not a number".format(idx))
+                        message = BountyBot.cmd_error("remove", "'{}' is not a number".format(idx))
                 else:
-                    message = self.__cmd_error("remove", "generic removal must have another argument <id>")
+                    message = BountyBot.cmd_error("remove", "generic removal must have another argument <id>")
             
             # remove a specific J-code
             else:
@@ -394,7 +414,7 @@ class BountyBot:
             self.talk(channel, message)
             print "[Op] Remove:", message
         else:
-            self.talk(channel, self.__invalid_arg("remove", 1))
+            self.talk(channel, BountyBot.invalid_arg("remove", 1))
 
     # !bb edit
     def cbk_edit(self, channel, cmd_args):
@@ -411,9 +431,9 @@ class BountyBot:
                         if result_info != "":
                             self.talk(channel, result_info)
                     else:
-                        message = self.__cmd_error("edit", "'{}' is not a number".format(idx))
+                        message = BountyBot.cmd_error("edit", "'{}' is not a number".format(idx))
                 else:
-                    message = self.__cmd_error("edit", "generic editing must have an <id> and a <new_description>")
+                    message = BountyBot.cmd_error("edit", "generic editing must have an <id> and a <new_description>")
     
             # edit a specific wormhole
             else:
@@ -431,13 +451,13 @@ class BountyBot:
                 if watchlist is not None:
                     message = self.bountydb.edit_jcode(name, watchlist, comments)
                 else:
-                    message = self.__cmd_error("edit", "2nd argument 'watchlist' must be either true or false")
+                    message = BountyBot.cmd_error("edit", "2nd argument 'watchlist' must be either true or false")
     
             # display result of operation
             self.talk(channel, message)
             print "[Op] Edit:", message
         else:
-            self.talk(channel, self.__invalid_arg("edit", 2))
+            self.talk(channel, BountyBot.invalid_arg("edit", 2))
     
     # !bb destroy
     def cbk_destroy(self, channel, cmd_args):
@@ -453,7 +473,7 @@ class BountyBot:
                 self.bountydb.clear_jcode()
                 message = "J-code list has been cleared"
             else:
-                message = self.__cmd_error("destroy", "2nd argument must be either 'generic' or 'jcode'")
+                message = BountyBot.cmd_error("destroy", "2nd argument must be either 'generic' or 'jcode'")
         
         # display result of operation
         self.talk(channel, message)
@@ -468,9 +488,9 @@ class BountyBot:
             if target_channel in self.ch.keys():
                 self.talk(self.ch[target_channel], target_msg)
             else:
-                self.talk(channel, self.__cmd_error("echo", "invalid channel name"))
+                self.talk(channel, BountyBot.cmd_error("echo", "invalid channel name"))
         else:
-            self.talk(channel, self.__invalid_arg("echo", 2))
+            self.talk(channel, BountyBot.invalid_arg("echo", 2))
     
     # !bb announce
     def cbk_announce(self, channel, cmd_args):
@@ -479,21 +499,11 @@ class BountyBot:
             self.talk(self.ch["general"], target_msg)
             self.talk(self.ch["wormhole-sales"], target_msg)
         else:
-            self.talk(channel, self.__invalid_arg("announce", 1))
-    
+            self.talk(channel, BountyBot.invalid_arg("announce", 1))
+
     # -----------------------------------------------------------------------------
     # Helper functions
-    
-    # Called when a command has incorrect number arguments
-    def __invalid_arg(self, cmd_name, nr_args):
-        return "Command '{}' not called correctly: at least {} additional argument(s) has(have) to be specified".format(
-            cmd_name, nr_args
-        )
 
-    # Called when a command does not have valid arguments
-    def __cmd_error(self, cmd_name, msg):
-        return "Error executing '{}': {}".format(cmd_name, msg)
-    
     # List only generic wormholes
     def __list_generic(self):
         message = "Generic orders:\n"
@@ -537,7 +547,19 @@ class BountyBot:
             message = "J-code list is empty"
             
         return message
-    
+
+    # Called when a command has incorrect number arguments
+    @staticmethod
+    def invalid_arg(cmd_name, nr_args):
+        return "Command '{}' not called correctly: at least {} additional argument(s) has(have) to be specified".format(
+            cmd_name, nr_args
+        )
+
+    @staticmethod
+    # Called when a command does not have valid arguments
+    def cmd_error(cmd_name, msg):
+        return "Error executing '{}': {}".format(cmd_name, msg)
+
     # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
