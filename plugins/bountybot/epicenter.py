@@ -22,7 +22,7 @@ class Epistatic:
         message = "*{}* - Leads to: {}, Stable Time: {} hrs, Mass/Jump: {} kT, Max Mass: {} kT".format(
                    self.static_code, self.wh_class, self.stabletime, self.maxjump, self.maxmass)
         
-        if self.info != None:
+        if self.info is not None:
             message += ", Info: {}".format(self.info)
         
         return message
@@ -30,7 +30,8 @@ class Epistatic:
 
 class Epiwh:
     planet_types = ["Temperate", "Ice", "Gas", "Oceanic", "Lava", "Barren", "Storm", "Plasma", "Shattered"]
-    effect_types = ["Black Hole", "Cataclysmic Variable", "Magnetar", "No effect", "Pulsar", "Red Giant", "Wolf-Rayet Star"]
+    effect_types = ["Black Hole", "Cataclysmic Variable", "Magnetar", "No effect", "Pulsar", "Red Giant",
+                    "Wolf-Rayet Star"]
     
     #             [T, I, G, O, L, B, S, P, Sh]
     perfect_pi = [[1, 1, 1, 0, 1, 1, 0, 0, 0],
@@ -52,7 +53,14 @@ class Epiwh:
     
     # pretty print
     def __str__(self):
-        output_str = "*{}* [C{}] {}, Radius: {} AU, Moons: {}, Statics: {}".format(self.name, self.wh_class, self.effect, self.radius, self.moons, self.statics)        
+        output_str = "*{}* [C{}] {}, Radius: {} AU, Moons: {}, Statics: {}".format(
+            self.name,
+            self.wh_class,
+            self.effect,
+            self.radius,
+            self.moons,
+            self.statics
+        )
         
         target_list = self.__translate_statics()
         if target_list:
@@ -60,7 +68,7 @@ class Epiwh:
             output_str += " ".join(target_list)
             output_str += ")"
         
-        if self.info != None:
+        if self.info is not None:
             output_str += ", Other info: {}".format(self.info)
         
         return output_str
@@ -305,7 +313,9 @@ class Epicenter:
     # Find out the target system of the static code
     def convertStatic(self, static_code):
         try:
-            target_sys = next(epistatic for epistatic in self.__epistatics if epistatic.static_code == static_code).wh_class
+            target_sys = next(
+                epistatic for epistatic in self.__epistatics if epistatic.static_code == static_code
+            ).wh_class
         except StopIteration:
             target_sys = "Unk"
         
@@ -318,7 +328,7 @@ class Epicenter:
         except StopIteration:
             epiwh = None
             
-        if epiwh != None:
+        if epiwh is not None:
             output_info = str(epiwh)
         else:
             output_info = "Unknown wormhole"
@@ -332,7 +342,7 @@ class Epicenter:
         except StopIteration:
             epiwh = None
             
-        if epiwh != None:
+        if epiwh is not None:
             if display_compact:
                 output_info = epiwh.compact_planet_info()
             else:
@@ -563,7 +573,8 @@ class Epicenter:
         
         # try to match wormholes respecting the given criteria
         for epiwh in self.__epiwhlist:
-            if epiwh.matchCrit(class_list, effect_list, static_params, radius_list, moon_list, planet_list, planetNr_list):
+            if epiwh.matchCrit(class_list, effect_list, static_params, radius_list, moon_list, planet_list,
+                               planetNr_list):
                 jcodes.append(epiwh.name)
         
         # determine which user input has been given consideration
@@ -592,14 +603,14 @@ class Epicenter:
         processed += "."
         result_info = "Matches: {}; Processed: {}".format(matches, processed)
         
-#         debugging
-#         print "Class:", class_list
-#         print "Effects:", effect_list
-#         print "Statics:", static_params
-#         print "Radius:", radius_list
-#         print "Moons:", moon_list
-#         print "Planets:", planet_list
-#         print "Nr. Planets:", planetNr_list
+        # debugging
+        # print "Class:", class_list
+        # print "Effects:", effect_list
+        # print "Statics:", static_params
+        # print "Radius:", radius_list
+        # print "Moons:", moon_list
+        # print "Planets:", planet_list
+        # print "Nr. Planets:", planetNr_list
         
         return [result_info, jcodes]
 
@@ -607,6 +618,7 @@ class Epicenter:
 def main():
     # Development purposes
     epi = Epicenter("../../epicenter.db", "wormholes", "statics")
+    print epi
     
 if __name__ == '__main__':
     main()
