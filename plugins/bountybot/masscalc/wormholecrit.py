@@ -79,7 +79,7 @@ class WormholeCrit:
 
     def splash(self, ship_mass):
         wormhole_shrunk = False
-        succesful_splash = 0 < ship_mass <= self.max_jump
+        succesful_splash = 0 < ship_mass <= self.max_jump and self.wh_state != WormholeCrit.COLLAPSED
 
         if succesful_splash:
             self._last_mass = self.mass[0] - ship_mass
@@ -137,7 +137,7 @@ class WormholeCrit:
                 self.wh_state = WormholeCrit.DESTAB
                 self.kstate = True
                 self.mass = (
-                    self._last_mass,
+                    self._last_mass if self._last_mass != 0 else self._md[0],
                     self._md[1] if self._md[1] < self.mass[1] else self.mass[1]
                 )
             else:
@@ -171,7 +171,7 @@ class WormholeCrit:
         return succesful_shrink
 
     def collapse_chance(self, ship_mass):
-        plausible = 0 < ship_mass <= self.max_jump
+        plausible = 0 < ship_mass <= self.max_jump and self.wh_state != WormholeCrit.COLLAPSED
         if plausible:
             chance = float(ship_mass - self.mass[0]) / (self.mass[1] - self.mass[0]) * 100.0
 

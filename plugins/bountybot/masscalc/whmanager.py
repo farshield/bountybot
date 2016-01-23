@@ -36,6 +36,16 @@ class WhManager:
 
         return False
 
+    def remove_signature(self, channel, signature):
+        for item in self.whlist:
+            [ch, sig, _] = item
+
+            if ch == channel and sig == signature:
+                self.whlist.remove(item)
+                return True
+
+        return False
+
     def cbk_spawn(self, channel, cmd_args):
         """
         !bb spawn
@@ -99,7 +109,35 @@ class WhManager:
         :param cmd_args:
         :return:
         """
-        self.talk(channel, "Splash")
+        if len(cmd_args) >= 2:
+            signature = cmd_args[0].upper()
+
+            if represents_float(cmd_args[1]):
+                ship_mass = float(cmd_args[1])
+
+                message = ""
+                for [ch, sig, wh] in self.whlist:
+                    if ch == channel and sig == signature:
+                        [succesful_splash, _] = wh.splash(ship_mass)
+
+                        if succesful_splash:
+                            message = "Signature `{}` = {}".format(signature, str(wh))
+                            if wh.wh_state == WormholeCrit.COLLAPSED:
+                                status = self.remove_signature(channel, signature)
+                                if status:
+                                    message += "\nRemoving collapsed wormhole `{}`".format(signature)
+                        else:
+                            message = "A ship mass of `{} kT` can not jump the wormhole".format(ship_mass)
+
+                if message == "":
+                    message = "No wormhole with signature `{}` was found".format(signature)
+            else:
+                message = self.cmd_error("splash", "'{}' is not a valid ship mass".format(cmd_args[1]))
+
+        else:
+            message = self.invalid_arg("splash", 2)
+
+        self.talk(channel, message)
 
     def cbk_shrink(self, channel, cmd_args):
         """
@@ -108,8 +146,29 @@ class WhManager:
         :param cmd_args:
         :return:
         """
+        if len(cmd_args) >= 1:
+            signature = cmd_args[0].upper()
 
-        self.talk(channel, "Shrink")
+            message = ""
+            for [ch, sig, wh] in self.whlist:
+                if ch == channel and sig == signature:
+                    succesful_shrink = wh.shrink()
+
+                    if succesful_shrink:
+                        message = "Signature `{}` = {}".format(signature, str(wh))
+                        if wh.wh_state == WormholeCrit.COLLAPSED:
+                            status = self.remove_signature(channel, signature)
+                            if status:
+                                message += "\nRemoving collapsed wormhole `{}`".format(signature)
+                    else:
+                        message = "Unable to shrink the wormhole (mass threshold not exceeded)"
+
+            if message == "":
+                message = "No wormhole with signature `{}` was found".format(signature)
+        else:
+            message = self.invalid_arg("shrink", 1)
+
+        self.talk(channel, message)
 
     def cbk_collapse(self, channel, cmd_args):
         """
@@ -120,17 +179,12 @@ class WhManager:
         """
         if len(cmd_args) >= 1:
             signature = cmd_args[0].upper()
+            status = self.remove_signature(channel, signature)
 
-            message = ""
-            for item in self.whlist:
-                [ch, sig, _] = item
-
-                if ch == channel and sig == signature:
-                    self.whlist.remove(item)
-                    message = "Wormhole with signature `{}` has been collapsed".format(signature)
-
-            if message == "":
-                message = "No wormhole with signature `{}` was found".format(signature)
+            if status:
+                message = "Wormhole with signature `{}` has been collapsed".format(signature)
+            else:
+                message = "No wormhole with signature `{}` was found in this channel".format(signature)
         else:
             message = self.invalid_arg("collapse", 1)
 

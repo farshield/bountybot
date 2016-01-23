@@ -310,7 +310,7 @@ class Epicenter:
             target_sys = "Unk"
         
         return target_sys
-       
+
     # Retrieve overall information on a wormhole
     def info(self, name):
         try:
