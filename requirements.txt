@@ -2,4 +2,3 @@ requests
 python-daemon
 pyyaml
 websocket-client
-slackclient
