@@ -8,18 +8,19 @@ Created on 2015-06-27
 class BountyConfig:
     """BountyBot Settings"""
     
-    DEBUG = False         # For development purposes (impacts which channel list to use)
-    REPORT_KILLS = True   # Bounty Bot will report kills in the report channel
-    THERA = True          # Thera connection reporting
-    PM_ENABLED = True     # Allow private messages
-    PG_ENABLED = True     # Allow private groups
-    
-    INTERVAL = 600        # How often should BountyBot check Zkillboard for new kills [seconds]
-    WAIT = 3              # Wait time between retrieving kills from individual systems [seconds]
-    CYCLE = 7             # Cycle of the "limit" parameter of Zkillboard [1, CYCLE] to prevent caching
+    DEBUG = False           # For development purposes (impacts which channel list to use)
+    REPORTS_ACTIVE = True   # Bounty Bot will report kills in the report channel
+    THERA = True            # Thera connection reporting (only if REPORTS_ACTIVE is also True)
+    THERA_HOURS = 24        # How many hours should pass before reporting the same system again?
+    PM_ENABLED = True       # Allow private messages
+    PG_ENABLED = True       # Allow private groups
 
-    SEARCH_RESULTS = 128  # Maximum number of Jcodes to be displayed in the search/generic commands
-    MAX_PARAMETER = 8     # Maximum number of parameters for the 'check' and 'info' command
+    INTERVAL = 600          # How often should BountyBot check Zkillboard for new kills [seconds]
+    WAIT = 3                # Wait time between retrieving kills from individual systems [seconds]
+    CYCLE = 7               # Cycle of the "limit" parameter of Zkillboard [1, CYCLE] to prevent caching
+
+    SEARCH_RESULTS = 128    # Maximum number of Jcodes to be displayed in the search/generic commands
+    MAX_PARAMETER = 8       # Maximum number of parameters for the 'check' and 'info' command
 
     USER_AGENT = "Bounty Bot Testing, Mail: your.email@address.com"
 

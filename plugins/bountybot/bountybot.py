@@ -24,6 +24,7 @@ class BountyBot:
             "wormholes",
             "generics",
             self.report_kill,
+            self.report_thera,
             BountyConfig.INTERVAL,
             BountyConfig.WAIT,
             BountyConfig.CYCLE
@@ -179,6 +180,14 @@ class BountyBot:
             wormhole.name,
             wormhole.lastkillDate,
             wormhole.sysId,
+            wormhole.comments
+        )
+        self.talk(self.ch["bountybot-report"], message)
+
+    # Report Thera connection
+    def report_thera(self, wormhole):
+        message = "`[THERA]` Connection to *{}* detected! Info: {}".format(
+            wormhole.name,
             wormhole.comments
         )
         self.talk(self.ch["bountybot-report"], message)

@@ -14,6 +14,7 @@ import threading
 from epicenter import Epicenter
 from StringIO import StringIO
 from bountyconfig import BountyConfig
+from evescout.evescout import EveScout
 
 
 class Zkb():
@@ -80,13 +81,25 @@ class GenericWh():
     
 # Bounty Bot main class
 class BountyDb():
-    def __init__(self, db_epicenter, db_name, table_jcodes, table_generics, report_fct, interval, apiwait, cyclelimit):
+    def __init__(
+            self,
+            db_epicenter,
+            db_name,
+            table_jcodes,
+            table_generics,
+            report_kill,
+            report_thera,
+            interval,
+            apiwait,
+            cyclelimit
+    ):
         # initialize instance variables
-        self.__db_epicenter = db_epicenter      # Epicenter database name     
+        self.__db_epicenter = db_epicenter      # Epicenter database name
         self.__db_name = db_name                # SQLite database name
         self.__table_jcodes = table_jcodes      # SQLite jcodes table name
         self.__table_generics = table_generics  # SQLite generics table name
-        self.__report_fct = report_fct          # callback report function
+        self.__report_kill = report_kill        # callback report function for kill detection
+        self.__report_thera = report_thera      # callback report function for Thera connection
         self.__interval = interval              # period (seconds) of the __check() function
         self.__apiwait = apiwait                # wait time between Zkillboard api calls
         self.__cyclelimit = cyclelimit          # limit cycle ugly hack ;)
@@ -94,6 +107,7 @@ class BountyDb():
         
         self.__whlist = []                      # wormhole list
         self.__generics = []                    # generics list
+        self.__thera_recent = {}                # thera recent reports
         
         # create Epicenter instance
         self.__epi = Epicenter(self.__db_epicenter, "wormholes", "statics")
@@ -141,7 +155,7 @@ class BountyDb():
         print ""
         
         # begin checking for kills if enabled
-        if BountyConfig.REPORT_KILLS:
+        if BountyConfig.REPORTS_ACTIVE:
             print "[Info] Bounty Bot manager loaded - check at every {} seconds".format(self.__interval)
             self.__start_check()
     
@@ -403,18 +417,37 @@ class BountyDb():
     def __check(self):
         print "[{}] Checking cycle {}...".format(time.strftime("%Y-%m-%d %H:%M:%S"), str(self.__cycle + 1))
         threading.Timer(self.__interval, self.__check, ()).start()
-        checkCounter = 0
-        
+        check_counter = 0
+
+        # populate list with wormhole connections from Thera (if enabled)
+        if BountyConfig.THERA:
+            thera_systems = EveScout.thera_connections()
+            print "Retrieving Thera connections: {}".format(thera_systems)
+        else:
+            thera_systems = []
+
+        # delete old Thera reports
+        for key, value in self.__thera_recent.iteritems():
+            if int(time.time()) - value > BountyConfig.THERA_HOURS * 3600:
+                del self.__thera_recent[key]
+
         # make new list for thread safety reasons and check that list
         for wh in list(self.__whlist):
             # only check watchlisted wormholes
             if wh.watchlist:
+
+                # check for Thera connections
+                if wh.name in thera_systems:
+                    if wh.name not in self.__thera_recent.keys():
+                        self.__thera_recent[wh.name] = int(time.time())
+                        self.__report_thera(wh)
+
                 # fetch Zkillboard data and check if anything was received
                 time.sleep(self.__apiwait)
                 zkbInfo = Zkb.lastkill(wh.sysId, self.__cycle + 1)
                 
                 if zkbInfo != None:
-                    checkCounter += 1
+                    check_counter += 1
                     [lastkillId, lastkillDate] = zkbInfo                    
                     if int(lastkillId) > int(wh.lastkillId):
                         # update wormhole list and database (if it wasn't removed from watchlist in the meantime)
@@ -423,11 +456,11 @@ class BountyDb():
                         
                         # finally, report kill, hurray! :)
                         print "[Report] {} - Kill detected at {}, Id: {}".format(wh.name, lastkillDate, lastkillId)
-                        self.__report_fct(wh)
+                        self.__report_kill(wh)
                 else:
                     print "[Error] Zkillboard API call failed"
         
-        print "[Info] Cycle ended - {} wormholes were checked".format(checkCounter)
+        print "[Info] Cycle ended - {} wormholes were checked".format(check_counter)
         
         # super ugly hack for limit cycling (to bypass mean zkb caching) >:)
         self.__cycle += 1
