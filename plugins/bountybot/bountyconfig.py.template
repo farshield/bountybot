@@ -10,6 +10,7 @@ class BountyConfig:
     
     DEBUG = False         # For development purposes (impacts which channel list to use)
     REPORT_KILLS = True   # Bounty Bot will report kills in the report channel
+    THERA = True          # Thera connection reporting
     PM_ENABLED = True     # Allow private messages
     PG_ENABLED = True     # Allow private groups
     
@@ -19,7 +20,9 @@ class BountyConfig:
 
     SEARCH_RESULTS = 128  # Maximum number of Jcodes to be displayed in the search/generic commands
     MAX_PARAMETER = 8     # Maximum number of parameters for the 'check' and 'info' command
-    
+
+    USER_AGENT = "Bounty Bot Testing, Mail: your.email@address.com"
+
     # Bot Manual
     RTFM = "manual-link-here"
 

@@ -23,8 +23,10 @@ class Zkb():
 
     @staticmethod
     def lastkill(solarSystemID, limit = 1):
-        headers = { "User-Agent" : "Wingspan Bounty Bot, Mail: valtyr.farshield@gmail.com",
-                    "Accept-encoding": "gzip" }
+        headers = {
+            "User-Agent": BountyConfig.USER_AGENT,
+            "Accept-encoding": "gzip"
+        }
         url = "https://zkillboard.com/api/solarSystemID/{}/limit/{}/".format(solarSystemID, limit)
         
         try:
