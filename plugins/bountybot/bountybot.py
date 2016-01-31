@@ -25,6 +25,8 @@ class BountyBot:
             "generics",
             self.report_kill,
             self.report_thera,
+            self.report_thera_generic,
+            self.report_thera_tripnull,
             BountyConfig.INTERVAL,
             BountyConfig.WAIT,
             BountyConfig.CYCLE
@@ -184,13 +186,28 @@ class BountyBot:
         )
         self.talk(self.ch["bountybot-report"], message)
 
-    # Report Thera connection
+    # Report Thera specific wormhole connection
     def report_thera(self, wormhole):
         message = "`[THERA]` Connection to *{}* detected! Info: {}".format(
             wormhole.name,
             wormhole.comments
         )
         self.talk(self.ch["bountybot-report"], message)
+
+    # Report Thera generic wormhole connection
+    def report_thera_generic(self, generic_wh, th_sys):
+        message = "`[THERA]` Generic wormhole *#{}* detected: *{}*".format(
+            generic_wh.idx,
+            th_sys
+        )
+        self.talk(self.ch["wormhole-sales"], message)
+
+    # Report Thera generic wormhole connection
+    def report_thera_tripnull(self, th_sys):
+        message = "`[THERA]` Psst! Tripnull connection detected: *{}*".format(
+            th_sys
+        )
+        self.talk(self.ch["wormhole-sales"], message)
     
     # -----------------------------------------------------------------------------
     # Command callbacks

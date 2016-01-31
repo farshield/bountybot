@@ -10,6 +10,7 @@ import sqlite3 as lite
 import gzip
 import json
 import threading
+import re
 
 from epicenter import Epicenter
 from StringIO import StringIO
@@ -89,25 +90,31 @@ class BountyDb():
             table_generics,
             report_kill,
             report_thera,
+            report_thera_generic,
+            report_thera_tripnull,
             interval,
             apiwait,
             cyclelimit
     ):
         # initialize instance variables
-        self.__db_epicenter = db_epicenter      # Epicenter database name
-        self.__db_name = db_name                # SQLite database name
-        self.__table_jcodes = table_jcodes      # SQLite jcodes table name
-        self.__table_generics = table_generics  # SQLite generics table name
-        self.__report_kill = report_kill        # callback report function for kill detection
-        self.__report_thera = report_thera      # callback report function for Thera connection
-        self.__interval = interval              # period (seconds) of the __check() function
-        self.__apiwait = apiwait                # wait time between Zkillboard api calls
-        self.__cyclelimit = cyclelimit          # limit cycle ugly hack ;)
-        self.__cycle = 0                        # cycle counter init to 0
+        self.__db_epicenter = db_epicenter                    # Epicenter database name
+        self.__db_name = db_name                              # SQLite database name
+        self.__table_jcodes = table_jcodes                    # SQLite jcodes table name
+        self.__table_generics = table_generics                # SQLite generics table name
+        self.__report_kill = report_kill                      # callback report function for kill detection
+        self.__report_thera = report_thera                    # callback report function for Thera connection
+        self.__report_thera_generic = report_thera_generic    # callback report function for Thera connection
+        self.__report_thera_tripnull = report_thera_tripnull  # callback report function for Thera connection
+        self.__interval = interval                            # period (seconds) of the __check() function
+        self.__apiwait = apiwait                              # wait time between Zkillboard api calls
+        self.__cyclelimit = cyclelimit                        # limit cycle ugly hack ;)
+        self.__cycle = 0                                      # cycle counter init to 0
         
-        self.__whlist = []                      # wormhole list
-        self.__generics = []                    # generics list
-        self.__thera_recent = {}                # thera recent reports
+        self.__whlist = []          # wormhole list
+        self.__generics = []        # generics list
+        self.__thera_recent = {}    # thera recent specific reports
+        self.__thera_generic = {}   # thera recent generic reports
+        self.__thera_tripnull = {}  # thera recent tripnull reports
         
         # create Epicenter instance
         self.__epi = Epicenter(self.__db_epicenter, "wormholes", "statics")
@@ -426,10 +433,34 @@ class BountyDb():
         else:
             thera_systems = []
 
-        # delete old Thera reports
+        # delete old Thera specific reports
         for key, value in self.__thera_recent.iteritems():
             if int(time.time()) - value > BountyConfig.THERA_HOURS * 3600:
                 del self.__thera_recent[key]
+
+        # delete old Thera generic reports
+        for key, value in self.__thera_generic.iteritems():
+            if int(time.time()) - value > BountyConfig.THERA_HOURS * 3600:
+                del self.__thera_generic[key]
+
+        # delete old Thera tripnull reports
+        for key, value in self.__thera_tripnull.iteritems():
+            if int(time.time()) - value > BountyConfig.THERA_HOURS * 3600:
+                del self.__thera_tripnull[key]
+
+        # check Thera generics
+        for th_sys in thera_systems:
+            for generic_wh in list(self.__generics):
+                if th_sys in generic_wh.jcodes and th_sys not in self.__thera_generic.keys():
+                    self.__thera_generic[th_sys] = int(time.time())
+                    self.__report_thera_generic(generic_wh, th_sys)
+
+        # check Thera tripnulls
+        for th_sys in thera_systems:
+            match_obj = re.search("J000[0-9]{3}", th_sys)
+            if match_obj and th_sys not in self.__thera_tripnull.keys():
+                self.__thera_tripnull[th_sys] = int(time.time())
+                self.__report_thera_tripnull(th_sys)
 
         # make new list for thread safety reasons and check that list
         for wh in list(self.__whlist):
