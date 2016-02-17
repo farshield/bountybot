@@ -22,6 +22,12 @@ class BountyConfig:
     SEARCH_RESULTS = 128    # Maximum number of Jcodes to be displayed in the search/generic commands
     MAX_PARAMETER = 8       # Maximum number of parameters for the 'check' and 'info' command
 
+    # Tripwire integration
+    TRIP_NAME = "BountyBot"
+    TRIP_USER = "username"
+    TRIP_PASS = "password"
+
+    # Zkill headers
     USER_AGENT = "Bounty Bot Testing, Mail: your.email@address.com"
 
     # Bot Manual
