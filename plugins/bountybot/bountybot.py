@@ -136,6 +136,8 @@ class BountyBot:
                 ("<sig> <ship_mass>", "compute probability of wormhole collapse with specified ship mass"),
             ]],
         ]
+        self.talk(self.ch["general"], "Back online")
+        self.talk(self.ch["wormhole-sales"], "Back online")
     
     # Command Interpreter
     def process_cmd(self, data):
