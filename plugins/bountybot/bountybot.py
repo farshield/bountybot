@@ -136,12 +136,16 @@ class BountyBot:
                 ("<sig> <ship_mass>", "compute probability of wormhole collapse with specified ship mass"),
             ]],
         ]
-        self.talk(self.ch["general"], "Back online")
-        self.talk(self.ch["wormhole-sales"], "Back online")
+
+        # Announce that BountyBot is back online when not in development mode
+        if not BountyConfig.DEBUG:
+            self.talk(self.ch["general"], "Back online")
+            self.talk(self.ch["wormhole-sales"], "Back online")
     
     # Command Interpreter
     def process_cmd(self, data):
-        cmd_args = data["text"].split()
+        processed_data = data["text"].encode('ascii', 'ignore').decode('ascii')
+        cmd_args = processed_data.split()
         
         # Check if the message is addressed to Bounty Bot
         if cmd_args[0].lower() in self.cmd_start:
