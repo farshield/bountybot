@@ -12,6 +12,7 @@ class Tripwire:
     """
     Tripwire handler
     """
+    USER_AGENT = "BountyBot"
 
     def __init__(self, username, password, url="https://tripwire.eve-apps.com"):
         self.username = username
@@ -28,12 +29,16 @@ class Tripwire:
             "username": self.username,
             "password": self.password
         }
+        headers = {
+            "Referer": login_url,
+            "User-Agent": Tripwire.USER_AGENT,
+        }
 
         try:
             result = session_requests.post(
                 login_url,
                 data=payload,
-                headers=dict(referer=login_url)
+                headers=headers
             )
         except requests.exceptions.ConnectionError as e:
             print e
@@ -56,11 +61,15 @@ class Tripwire:
                 "systemID": system_id,
                 "comment": comment
             }
+            headers = {
+                "Referer": comment_url,
+                "User-Agent": Tripwire.USER_AGENT,
+            }
 
             result = self.session_requests.post(
                 comment_url,
                 data=payload,
-                headers=dict(referer=comment_url)
+                headers=headers
             )
 
             if result.status_code == 200:
@@ -77,10 +86,15 @@ class Tripwire:
                 "mode": "refresh",
                 "systemID": system_id
             }
+            headers = {
+                "Referer": refresh_url,
+                "User-Agent": Tripwire.USER_AGENT,
+            }
 
             result = self.session_requests.get(
                 refresh_url,
-                params=payload
+                params=payload,
+                headers=headers
             )
 
             if result.status_code == 200:
@@ -111,11 +125,15 @@ class Tripwire:
                 "systemID": system_id,
                 "comment": comment
             }
+            headers = {
+                "Referer": comment_url,
+                "User-Agent": Tripwire.USER_AGENT,
+            }
 
             result = self.session_requests.post(
                 comment_url,
                 data=payload,
-                headers=dict(referer=comment_url)
+                headers=headers
             )
 
             if result.status_code == 200:
@@ -132,11 +150,15 @@ class Tripwire:
                 "mode": "delete",
                 "commentID": comment_id,
             }
+            headers = {
+                "Referer": comment_url,
+                "User-Agent": Tripwire.USER_AGENT,
+            }
 
             result = self.session_requests.post(
                 comment_url,
                 data=payload,
-                headers=dict(referer=comment_url)
+                headers=headers
             )
 
             if result.status_code == 200:

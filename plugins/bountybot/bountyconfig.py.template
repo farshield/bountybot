@@ -22,7 +22,11 @@ class BountyConfig:
     SEARCH_RESULTS = 128    # Maximum number of Jcodes to be displayed in the search/generic commands
     MAX_PARAMETER = 8       # Maximum number of parameters for the 'check' and 'info' command
 
+    # Enable/disable wormhole mass calculator/tracker
+    MASS_TRACKER_ENABLED = False
+
     # Tripwire integration
+    TRIP_URL = "https://tripwire.eve-apps.com"
     TRIP_NAME = "BountyBot"
     TRIP_USER = "username"
     TRIP_PASS = "password"

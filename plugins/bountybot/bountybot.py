@@ -31,7 +31,10 @@ class BountyBot:
             BountyConfig.WAIT,
             BountyConfig.CYCLE
         )
-        whmanager = WhManager(self)
+        if BountyConfig.MASS_TRACKER_ENABLED:
+            whmanager = WhManager(self)
+        else:
+            whmanager = None
 
         # -----------------------------------------------------------------------------
         # Channel Settings
@@ -118,24 +121,35 @@ class BountyBot:
             ["announce", self.chlist_cfg, self.cbk_announce, [
                 ("<message>", "make an announcement as Bounty Bot")
             ]],
-            # -----------------------------------------------------------------------------
-            ["spawn", self.chlist_all, whmanager.cbk_spawn, [
-                ("", "view spawned wormholes in current channel"),
-                ("<sig> <type> <state>", "spawn a wormhole")
-            ]],
-            ["splash", self.chlist_all, whmanager.cbk_splash, [
-                ("<sig> <ship_mass>", "splash a wormhole with specified ship mass"),
-            ]],
-            ["shrink", self.chlist_all, whmanager.cbk_shrink, [
-                ("<sig>", "report when wormhole shrinks"),
-            ]],
-            ["collapse", self.chlist_all, whmanager.cbk_collapse, [
-                ("<sig>", "remove wormhole from channel"),
-            ]],
-            ["chance", self.chlist_all, whmanager.cbk_chance, [
-                ("<sig> <ship_mass>", "compute probability of wormhole collapse with specified ship mass"),
-            ]],
         ]
+        # -----------------------------------------------------------------------------
+        if whmanager:
+            self.cmd_list.append(
+                ["spawn", self.chlist_all, whmanager.cbk_spawn, [
+                    ("", "view spawned wormholes in current channel"),
+                    ("<sig> <type> <state>", "spawn a wormhole")
+                ]]
+            )
+            self.cmd_list.append(
+                ["splash", self.chlist_all, whmanager.cbk_splash, [
+                    ("<sig> <ship_mass>", "splash a wormhole with specified ship mass"),
+                ]]
+            )
+            self.cmd_list.append(
+                ["shrink", self.chlist_all, whmanager.cbk_shrink, [
+                    ("<sig>", "report when wormhole shrinks"),
+                ]],
+            )
+            self.cmd_list.append(
+                ["collapse", self.chlist_all, whmanager.cbk_collapse, [
+                    ("<sig>", "remove wormhole from channel"),
+                ]],
+            )
+            self.cmd_list.append(
+                ["chance", self.chlist_all, whmanager.cbk_chance, [
+                    ("<sig> <ship_mass>", "compute probability of wormhole collapse with specified ship mass"),
+                ]]
+            )
 
         # Announce that BountyBot is back online when not in development mode
         if not BountyConfig.DEBUG:

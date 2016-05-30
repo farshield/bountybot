@@ -429,11 +429,11 @@ class BountyDb():
             comments
         )
 
-        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS)
+        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS, BountyConfig.TRIP_URL)
         trip.add_comment(str(sysId), comments)
 
     def tripwire_delete(self, sysId):
-        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS)
+        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS, BountyConfig.TRIP_URL)
         trip.delete_comments_by_name(str(sysId), BountyConfig.TRIP_NAME)
 
     def tripwire_edit(self, sysId, comments):
@@ -442,7 +442,7 @@ class BountyDb():
             comments
         )
 
-        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS)
+        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS, BountyConfig.TRIP_URL)
         trip_comments = trip.get_comments_by_name(str(sysId), BountyConfig.TRIP_NAME)
 
         if trip_comments:
