@@ -7,3 +7,4 @@ bounties.db
 .pydevproject
 .idea
 venv/
+ext_*
