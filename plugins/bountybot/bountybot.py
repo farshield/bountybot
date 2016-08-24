@@ -313,9 +313,9 @@ class BountyBot:
             message += self.__list_jcode()
         else:
             if cmd_args[0].lower() in ["generic", "generics"]:
-                message = self.__list_generic()
+                message = self.__list_generic(cmd_args[1:])
             elif cmd_args[0].lower() in ["jcode", "jcodes"]:
-                message = self.__list_jcode()
+                message = self.__list_jcode(cmd_args[1:])
             elif cmd_args[0].lower() in ["jcode+", "jcodes+"]:
                 message = self.__list_jcode_detail()
             else:
@@ -551,31 +551,58 @@ class BountyBot:
     # Helper functions
 
     # List only generic wormholes
-    def __list_generic(self):
-        message = "Generic orders:\n"
+    def __list_generic(self, generic_args=None):
         generic_list = self.bountydb.list_generic()
-        
+
         if len(generic_list) > 0:
-            for wh_gen in generic_list:
-                message += ">" + str(wh_gen) + "\n"
+            if generic_args:
+                # list only the specified IDs
+                generic_args_int = [int(gen_id) for gen_id in generic_args if BbCommon.represents_int(gen_id)]
+                message = ""
+                found = False
+                for wh_gen in generic_list:
+                    if wh_gen.idx in generic_args_int:
+                        message += ">" + str(wh_gen) + "\n"
+                        found = True
+                if not found:
+                    message += "No generic orders found with the given id(s)!"
+            else:
+                # list all generics
+                message = "Generic orders:\n"
+                for wh_gen in generic_list:
+                    message += ">" + str(wh_gen) + "\n"
+
         else:
             message = "Generic wormhole list is empty"
-        
+
         return message
     
     # List short J-codes
-    def __list_jcode(self):
-        output_list = []
+    def __list_jcode(self, jcode_args=None):
         jcode_list = self.bountydb.list_jcode()
         
         if len(jcode_list) > 0:
-            for wh in jcode_list:
-                wh_element = "*{}* [C{}]".format(wh.name, wh.whclass)
-                if not wh.watchlist:
-                    wh_element += "~"  # append special character to denote system is not actively watchlisted
-                output_list += [wh_element]
-                
-            message = "Specific orders:\n>" + ", ".join(output_list)
+            if jcode_args:
+                # list only the specified J-code(s)
+                jcode_args = [x.upper() for x in jcode_args]
+                message = ""
+                found = False
+                for wh in jcode_list:
+                    if wh.name in jcode_args:
+                        message += str(wh) + "\n"
+                        found = True
+                if not found:
+                    message += "No specific orders found with the given J-code(s)!"
+            else:
+                # list all J-codes (short form)
+                output_list = []
+                for wh in jcode_list:
+                    wh_element = "*{}* [C{}]".format(wh.name, wh.whclass)
+                    if not wh.watchlist:
+                        wh_element += "~"  # append special character to denote system is not actively watchlisted
+                    output_list += [wh_element]
+
+                message = "Specific orders:\n>" + ", ".join(output_list)
         else:
             message = "J-code list is empty"
             

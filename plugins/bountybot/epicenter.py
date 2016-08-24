@@ -515,6 +515,9 @@ class Epicenter:
         
         # class group (should always be the first one in group)
         if len(groups) > 0:
+            if "sansha" in groups[0]:
+                return ["Matches: 2; Processed: Sansha Override!", ['J005299', 'J010556']]
+
             if "all" in groups[0]:
                 class_list = [1, 2, 3, 4, 5, 6, 13, 14, 15, 16, 17, 18]
             else:
