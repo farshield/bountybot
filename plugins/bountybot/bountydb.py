@@ -488,17 +488,17 @@ class BountyDb():
             thera_systems = []
 
         # delete old Thera specific reports
-        for key, value in self.__thera_recent.iteritems():
+        for key, value in self.__thera_recent.items():
             if int(time.time()) - value > BountyConfig.THERA_HOURS * 3600:
                 del self.__thera_recent[key]
 
         # delete old Thera generic reports
-        for key, value in self.__thera_generic.iteritems():
+        for key, value in self.__thera_generic.items():
             if int(time.time()) - value > BountyConfig.THERA_HOURS * 3600:
                 del self.__thera_generic[key]
 
         # delete old Thera tripnull reports
-        for key, value in self.__thera_tripnull.iteritems():
+        for key, value in self.__thera_tripnull.items():
             if int(time.time()) - value > BountyConfig.THERA_HOURS * 3600:
                 del self.__thera_tripnull[key]
 
