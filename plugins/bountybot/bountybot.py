@@ -75,7 +75,7 @@ class BountyBot:
             ["list", self.chlist_all, self.cbk_list, [
                 (
                     "[generic/jcode/jcode+] [id]",
-                    "displays current bounty systems (systems with * symbol have kill reports disabled)"
+                    "displays current bounty systems (systems with ~ symbol have kill reports disabled)"
                 )
             ]],
             ["generic", self.chlist_all, self.cbk_generic, [

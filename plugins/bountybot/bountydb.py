@@ -16,7 +16,7 @@ from epicenter import Epicenter
 from StringIO import StringIO
 from bountyconfig import BountyConfig
 from evescout.evescout import EveScout
-from tripwire.tripwire import Tripwire
+from tripwire.tripwire_sql import TripwireSql
 
 
 class Zkb():
@@ -222,28 +222,30 @@ class BountyDb():
             if self.get_jcode(name) == None:
                 # fetch Zkillboard data and check if anything was received
                 zkbInfo = Zkb.lastkill(sysId)
-                if zkbInfo != None:
-                    # all information is available, proceed to database addition
+                if zkbInfo:
                     [lastkillId, lastkillDate] = zkbInfo
-                    creation_date = time.strftime("%Y-%m-%d")
-                    whclass = self.__epi.getClass(name)
-                    wh = Wormhole(sysId, name, whclass, creation_date, comments, lastkillId, lastkillDate, watchlist)
-                    self.__whlist.append(wh)
+                else:
+                    lastkillId = 1
+                    lastkillDate = '2016-01-01 00:00:00'
 
-                    # add tripwire comments
-                    tripwire_thread = threading.Thread(target=self.tripwire_add, args=(sysId, comments))
+                # all information is available, proceed to database addition
+                creation_date = time.strftime("%Y-%m-%d")
+                whclass = self.__epi.getClass(name)
+                wh = Wormhole(sysId, name, whclass, creation_date, comments, lastkillId, lastkillDate, watchlist)
+                self.__whlist.append(wh)
+
+                # add tripwire comments
+                if BountyConfig.TRIP_INFO["enabled"]:
+                    tripwire_thread = threading.Thread(target=self.tripwire_add_or_update, args=(sysId, comments))
                     tripwire_thread.daemon = True
                     tripwire_thread.start()
 
-                    # database insert
-                    watch = 1 if watchlist else 0
-                    statement = "INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?, ?)".format(self.__table_jcodes)
-                    self.__cursor.execute(statement, (sysId, name, creation_date, comments, lastkillId, lastkillDate, watch))
-                    self.__db_con.commit()
-                    return str(wh)  # all OK :)
-
-                else:
-                    return "Unable to fetch data from Zkillboard. Try again later."
+                # database insert
+                watch = 1 if watchlist else 0
+                statement = "INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?, ?)".format(self.__table_jcodes)
+                self.__cursor.execute(statement, (sysId, name, creation_date, comments, lastkillId, lastkillDate, watch))
+                self.__db_con.commit()
+                return str(wh)  # all OK :)
             else:
                 return "{} - already in the list".format(name)
         else:
@@ -281,9 +283,10 @@ class BountyDb():
             self.__db_con.commit()
 
             # delete tripwire comments
-            tripwire_thread = threading.Thread(target=self.tripwire_delete, args=(sysId,))
-            tripwire_thread.daemon = True
-            tripwire_thread.start()
+            if BountyConfig.TRIP_INFO["enabled"]:
+                tripwire_thread = threading.Thread(target=self.tripwire_delete, args=(sysId,))
+                tripwire_thread.daemon = True
+                tripwire_thread.start()
             
             return "Wormhole {} removed".format(name)
         else:
@@ -325,9 +328,10 @@ class BountyDb():
                     self.__cursor.execute(statement, (watch, comments, name))
 
                     # edit tripwire comments
-                    tripwire_thread = threading.Thread(target=self.tripwire_edit, args=(sysId, comments))
-                    tripwire_thread.daemon = True
-                    tripwire_thread.start()
+                    if BountyConfig.TRIP_INFO["enabled"]:
+                        tripwire_thread = threading.Thread(target=self.tripwire_add_or_update, args=(sysId, comments))
+                        tripwire_thread.daemon = True
+                        tripwire_thread.start()
                 else:
                     statement = "UPDATE {} SET Watchlist=? WHERE Name=?".format(self.__table_jcodes)
                     self.__cursor.execute(statement, (watch, name))
@@ -423,34 +427,30 @@ class BountyDb():
         self.__db_con.commit()
 
     # -----------------------------------------------------------------------------
-    def tripwire_add(self, sysId, comments):
-        comments = '<span style="color: rgb(178, 34, 34); font-family: Arial; font-size: 21px; line-height: normal; ' \
-                   'white-space: pre-wrap; background-color: rgb(0, 0, 0);">This is a bounty system! {}</span>'.format(
-            comments
+    @staticmethod
+    def tripwire_connect():
+        return TripwireSql(
+            user=BountyConfig.TRIP_INFO["user"],
+            passwd=BountyConfig.TRIP_INFO["pass"],
+            mask=BountyConfig.TRIP_INFO["mask"],
+            trip_char_id=BountyConfig.TRIP_INFO["trip_char_id"],
+            host=BountyConfig.TRIP_INFO["host"],
+            port=BountyConfig.TRIP_INFO["port"],
+            db=BountyConfig.TRIP_INFO["db"]
         )
 
-        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS, BountyConfig.TRIP_URL)
-        trip.add_comment(str(sysId), comments)
+    def tripwire_add_or_update(self, sysId, comments):
+        trip_sql = self.tripwire_connect()
+        trip_sql.add_or_update_specific(sysId, comments)
+        trip_sql.close_db()
 
     def tripwire_delete(self, sysId):
-        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS, BountyConfig.TRIP_URL)
-        trip.delete_comments_by_name(str(sysId), BountyConfig.TRIP_NAME)
-
-    def tripwire_edit(self, sysId, comments):
-        comments = '<span style="color: rgb(178, 34, 34); font-family: Arial; font-size: 21px; line-height: normal; ' \
-                   'white-space: pre-wrap; background-color: rgb(0, 0, 0);">This is a bounty system! {}</span>'.format(
-            comments
-        )
-
-        trip = Tripwire(BountyConfig.TRIP_USER, BountyConfig.TRIP_PASS, BountyConfig.TRIP_URL)
-        trip_comments = trip.get_comments_by_name(str(sysId), BountyConfig.TRIP_NAME)
-
-        if trip_comments:
-            comment_id = trip_comments[0]['id']
-            trip.edit_comment(str(sysId), comment_id, comments)
+        trip_sql = self.tripwire_connect()
+        trip_sql.delete_specific(sysId)
+        trip_sql.close_db()
     # -----------------------------------------------------------------------------
 
-    # looks like stupid sqlite db can not be updated from 2 different threads
+    # sqlite db can not be updated from 2 different threads
     def __update_sqlite(self, db_name, table_name, lastkillId, lastkillDate, wh_name):
         conn = lite.connect(db_name)
         c = conn.cursor()

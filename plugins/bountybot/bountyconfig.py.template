@@ -26,10 +26,16 @@ class BountyConfig:
     MASS_TRACKER_ENABLED = False
 
     # Tripwire integration
-    TRIP_URL = "https://tripwire.eve-apps.com"
-    TRIP_NAME = "BountyBot"
-    TRIP_USER = "username"
-    TRIP_PASS = "password"
+    TRIP_INFO = {
+        "enabled": False,
+        "host": "127.0.0.1",
+        "port": 3306,
+        "db": "tripwire",
+        "user": "sql_user",
+        "pass": "sql_pass",
+        "mask": "1.0",
+        "trip_char_id": 0
+    }
 
     # Zkill headers
     USER_AGENT = "Bounty Bot Testing, Mail: your.email@address.com"
@@ -42,21 +48,21 @@ class BountyConfig:
     
     # Development
     CHLIST_DEV = {
-                  "general": "C123ABCDE",
-                  "testing": "C123ABCDE",
-                  "wormhole-sales": "C123ABCDE",
-                  "bountybot-report": "C123ABCDE",
-                  "bountybot-config": "G123ABCDE"
-                  }
+        "general": "C123ABCDE",
+        "testing": "C123ABCDE",
+        "wormhole-sales": "C123ABCDE",
+        "bountybot-report": "C123ABCDE",
+        "bountybot-config": "G123ABCDE"
+    }
     
     # Staging
     CHLIST_STAGE = {
-                    "general": "C123ABCDE",
-                    "testing": "C123ABCDE",
-                    "wormhole-sales": "C123ABCDE",
-                    "bountybot-report": "C123ABCDE",
-                    "bountybot-config": "G123ABCDE"
-                    }
+        "general": "C123ABCDE",
+        "testing": "C123ABCDE",
+        "wormhole-sales": "C123ABCDE",
+        "bountybot-report": "C123ABCDE",
+        "bountybot-config": "G123ABCDE"
+    }
     # -----------------------------------------------------------------------------
 
     def __init__(self):
