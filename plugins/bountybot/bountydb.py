@@ -265,6 +265,13 @@ class BountyDb():
         [result_info, jcodes] = self.__epi.computeGeneric(description)
         generic_wh = GenericWh(idx, creation_date, description, jcodes)
         self.__generics.append(generic_wh)
+
+        # add tripwire comments
+        if BountyConfig.TRIP_INFO["enabled"]:
+            tripwire_thread = threading.Thread(target=self.tripwire_add_generic, args=(idx, description, jcodes))
+            tripwire_thread.daemon = True
+            tripwire_thread.start()
+
         return [str(generic_wh), result_info]
     
     # remove wormhole (if exists)
@@ -302,6 +309,15 @@ class BountyDb():
                 statement = "DELETE FROM {} WHERE Idx=?".format(self.__table_generics)
                 self.__cursor.execute(statement, (idx, ))
                 self.__db_con.commit()
+
+                # delete tripwire comments
+                if BountyConfig.TRIP_INFO["enabled"]:
+                    tripwire_thread = threading.Thread(
+                        target=self.tripwire_delete_generic,
+                        args=(idx, generic_wh.jcodes)
+                    )
+                    tripwire_thread.daemon = True
+                    tripwire_thread.start()
                 
                 return "Generic wormhole Id#{} removed".format(idx)
         
@@ -347,6 +363,7 @@ class BountyDb():
             if generic_wh.idx == idx:
                 [result_info, jcodes] = self.__epi.computeGeneric(description)
                 generic_wh.description = description
+                old_jcodes = list(generic_wh.jcodes)
                 generic_wh.jcodes = jcodes
                 self.__generics[index] = generic_wh
         
@@ -354,6 +371,15 @@ class BountyDb():
                 statement = "UPDATE {} SET Description=? WHERE Idx=?".format(self.__table_generics)
                 self.__cursor.execute(statement, (description, idx))
                 self.__db_con.commit()
+
+                # edit tripwire comments
+                if BountyConfig.TRIP_INFO["enabled"]:
+                    tripwire_thread = threading.Thread(
+                        target=self.tripwire_update_generic,
+                        args=(idx, description, old_jcodes, jcodes)
+                    )
+                    tripwire_thread.daemon = True
+                    tripwire_thread.start()
                 
                 return [str(generic_wh), result_info]
 
@@ -447,6 +473,26 @@ class BountyDb():
     def tripwire_delete(self, sysId):
         trip_sql = self.tripwire_connect()
         trip_sql.delete_specific(sysId)
+        trip_sql.close_db()
+
+    def tripwire_add_generic(self, generic_id, description, jcodes):
+        system_ids = [self.__epi.getSysId(name) for name in jcodes]
+        trip_sql = self.tripwire_connect()
+        trip_sql.add_generic(generic_id, description, system_ids)
+        trip_sql.close_db()
+
+    def tripwire_update_generic(self, generic_id, description, old_jcodes, new_jcodes):
+        old_system_ids = [self.__epi.getSysId(name) for name in old_jcodes]
+        new_system_ids = [self.__epi.getSysId(name) for name in new_jcodes]
+        trip_sql = self.tripwire_connect()
+        trip_sql.delete_generic(generic_id, old_system_ids)
+        trip_sql.add_generic(generic_id, description, new_system_ids)
+        trip_sql.close_db()
+
+    def tripwire_delete_generic(self, generic_id, jcodes):
+        system_ids = [self.__epi.getSysId(name) for name in jcodes]
+        trip_sql = self.tripwire_connect()
+        trip_sql.delete_generic(generic_id, system_ids)
         trip_sql.close_db()
     # -----------------------------------------------------------------------------
 
