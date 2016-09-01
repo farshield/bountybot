@@ -133,7 +133,7 @@ class BountyDb():
         
         # create generic wormholes table
         self.__cursor.execute("""CREATE TABLE IF NOT EXISTS {}
-            (Idx INTEGER PRIMARY KEY,
+            (Idx INTEGER PRIMARY KEY AUTOINCREMENT,
             Date TEXT,
             Description TEXT)""".format(self.__table_generics))
         

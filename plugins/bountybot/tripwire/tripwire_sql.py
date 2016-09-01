@@ -14,7 +14,7 @@ class TripwireSql:
     Tripwire SQL comments for @bountybot
     """
     specific_message = "This is a bounty system!"
-    generic_message = "This is a generic bounty system. Please verify if the requirements are met."
+    generic_message = "This is a potential generic bounty system. Please verify if the requirements are met."
     message_suffix = '<span style="font-size:9px;"><em><span style="color:#D3D3D3;">' \
                      'Please do not remove or modify this comment.</span></em></span>'
 
