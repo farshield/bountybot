@@ -4,12 +4,15 @@ Created on 2015-06-06
 @author: Valtyr Farshield
 """
 
+import os
 import random
 
 from bountydb import BountyDb
 from bountyconfig import BountyConfig
 from bb_common import BbCommon
 from masscalc.whmanager import WhManager
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class BountyBot:
@@ -19,8 +22,8 @@ class BountyBot:
 
         # Bounty Database initialization
         self.bountydb = BountyDb(
-            "epicenter.db",
-            "bounties.db",
+            os.path.join(basedir, "epicenter.db"),
+            os.path.join(basedir, "bounties.db"),
             "wormholes",
             "generics",
             self.report_kill,

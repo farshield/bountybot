@@ -603,7 +603,7 @@ def print2screen(msg):
 
 def main():
     # Development purposes
-    bb = BountyDb("../../epicenter.db", "../../bounties.db", "wormholes", "generics", print2screen, 600, 3, 7)
+    bb = BountyDb("epicenter.db", "bounties.db", "wormholes", "generics", print2screen, 600, 3, 7)
 
 if __name__ == '__main__':
     main()
