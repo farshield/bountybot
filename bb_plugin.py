@@ -17,9 +17,11 @@ def talk(channel, message):
 # Bounty Bot handler
 bb = BountyBot(talk)
 
+
 # Event - connected to server
-def process_hello(data):
+def process_hello(_):
     print "[Info] Bounty Bot connected to server"
+
 
 # Event - message received
 def process_message(data):

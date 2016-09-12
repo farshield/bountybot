@@ -211,6 +211,24 @@ class BountyDb():
             
         return message
 
+    @staticmethod
+    def shortlink(message):
+        """
+        Finds URLs and correctly formats them for Slack and Tripire
+        :param message: Input message from Slack
+        :return: Two processed strings (Slack and Tripwire)
+        """
+        bb_message = trip_message = message
+        regex = re.compile('(<(http[s]?://.*?)(?:\|(.*?))?>)', re.IGNORECASE)
+        for group, link, shortlink in regex.findall(message):
+            bb_message = bb_message.replace(group, shortlink if shortlink else link, 1)
+            trip_message = trip_message.replace(
+                group,
+                '<a href="{}" target="_blank">{}</a>'.format(link, shortlink if shortlink else link),
+                1
+            )
+        return [bb_message, trip_message]
+
     # add a new wormhole (if valid)
     def add_jcode(self, name, watchlist, comments):
         name = name.upper()                # ignore case
@@ -229,21 +247,24 @@ class BountyDb():
                     lastkillDate = '2016-01-01 00:00:00'
 
                 # all information is available, proceed to database addition
+                [bb_comments, trip_comments] = self.shortlink(comments)
                 creation_date = time.strftime("%Y-%m-%d")
                 whclass = self.__epi.getClass(name)
-                wh = Wormhole(sysId, name, whclass, creation_date, comments, lastkillId, lastkillDate, watchlist)
+                wh = Wormhole(sysId, name, whclass, creation_date, bb_comments, lastkillId, lastkillDate, watchlist)
                 self.__whlist.append(wh)
 
                 # add tripwire comments
                 if BountyConfig.TRIP_INFO["enabled"]:
-                    tripwire_thread = threading.Thread(target=self.tripwire_add_or_update, args=(sysId, comments))
+                    tripwire_thread = threading.Thread(target=self.tripwire_add_or_update, args=(sysId, trip_comments))
                     tripwire_thread.daemon = True
                     tripwire_thread.start()
 
                 # database insert
-                watch = 1 if watchlist else 0
                 statement = "INSERT INTO {} VALUES (?, ?, ?, ?, ?, ?, ?)".format(self.__table_jcodes)
-                self.__cursor.execute(statement, (sysId, name, creation_date, comments, lastkillId, lastkillDate, watch))
+                self.__cursor.execute(
+                    statement,
+                    (sysId, name, creation_date, bb_comments, lastkillId, lastkillDate, 1 if watchlist else 0)
+                )
                 self.__db_con.commit()
                 return str(wh)  # all OK :)
             else:
@@ -254,21 +275,22 @@ class BountyDb():
     # add a new generic wormhole, ex: C3 with HS static
     def add_generic(self, description):
         creation_date = time.strftime("%Y-%m-%d")
-        
+        [bb_description, trip_description] = self.shortlink(description)
+
         # database insert
         statement = "INSERT INTO {} VALUES (NULL, ?, ?)".format(self.__table_generics)
-        self.__cursor.execute(statement, (creation_date, description))
+        self.__cursor.execute(statement, (creation_date, bb_description))
         idx = self.__cursor.lastrowid
         self.__db_con.commit()
         
         # list insert
-        [result_info, jcodes] = self.__epi.computeGeneric(description)
-        generic_wh = GenericWh(idx, creation_date, description, jcodes)
+        [result_info, jcodes] = self.__epi.computeGeneric(bb_description)
+        generic_wh = GenericWh(idx, creation_date, bb_description, jcodes)
         self.__generics.append(generic_wh)
 
         # add tripwire comments
         if BountyConfig.TRIP_INFO["enabled"]:
-            tripwire_thread = threading.Thread(target=self.tripwire_add_generic, args=(idx, description, jcodes))
+            tripwire_thread = threading.Thread(target=self.tripwire_add_generic, args=(idx, trip_description, jcodes))
             tripwire_thread.daemon = True
             tripwire_thread.start()
 
@@ -330,28 +352,27 @@ class BountyDb():
         for index, wh in enumerate(self.__whlist):
             if wh.name == name:
                 wh.watchlist = watchlist
-                if len(comments) > 0:
-                    wh.comments = comments
-                self.__whlist[index] = wh
-        
-                # database modify
-                watch = 1 if watchlist else 0
-                
+
                 # only update comments if input string is not empty
                 if len(comments) > 0:
-                    sysId = wh.sysId
+                    [bb_comments, trip_comments] = self.shortlink(comments)
+                    wh.comments = bb_comments
                     statement = "UPDATE {} SET Watchlist=?, Comments=? WHERE Name=?".format(self.__table_jcodes)
-                    self.__cursor.execute(statement, (watch, comments, name))
+                    self.__cursor.execute(statement, (1 if watchlist else 0, bb_comments, name))
 
                     # edit tripwire comments
                     if BountyConfig.TRIP_INFO["enabled"]:
-                        tripwire_thread = threading.Thread(target=self.tripwire_add_or_update, args=(sysId, comments))
+                        tripwire_thread = threading.Thread(
+                            target=self.tripwire_add_or_update,
+                            args=(wh.sysId, trip_comments)
+                        )
                         tripwire_thread.daemon = True
                         tripwire_thread.start()
                 else:
                     statement = "UPDATE {} SET Watchlist=? WHERE Name=?".format(self.__table_jcodes)
-                    self.__cursor.execute(statement, (watch, name))
-                
+                    self.__cursor.execute(statement, (1 if watchlist else 0, name))
+
+                self.__whlist[index] = wh
                 self.__db_con.commit()
                 return str(wh)
 
@@ -361,22 +382,23 @@ class BountyDb():
     def edit_generic(self, idx, description):
         for index, generic_wh in enumerate(self.__generics):
             if generic_wh.idx == idx:
-                [result_info, jcodes] = self.__epi.computeGeneric(description)
-                generic_wh.description = description
+                [bb_description, trip_description] = self.shortlink(description)
+                [result_info, jcodes] = self.__epi.computeGeneric(bb_description)
+                generic_wh.description = bb_description
                 old_jcodes = list(generic_wh.jcodes)
                 generic_wh.jcodes = jcodes
                 self.__generics[index] = generic_wh
         
                 # database modify
                 statement = "UPDATE {} SET Description=? WHERE Idx=?".format(self.__table_generics)
-                self.__cursor.execute(statement, (description, idx))
+                self.__cursor.execute(statement, (bb_description, idx))
                 self.__db_con.commit()
 
                 # edit tripwire comments
                 if BountyConfig.TRIP_INFO["enabled"]:
                     tripwire_thread = threading.Thread(
                         target=self.tripwire_update_generic,
-                        args=(idx, description, old_jcodes, jcodes)
+                        args=(idx, trip_description, old_jcodes, jcodes)
                     )
                     tripwire_thread.daemon = True
                     tripwire_thread.start()

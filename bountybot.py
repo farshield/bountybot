@@ -326,7 +326,7 @@ class BountyBot:
         
         self.talk(channel, message)
 
-    # !bb jcodes
+    # !bb generic
     def cbk_generic(self, channel, cmd_args):
         if len(cmd_args) >= 1:
             idx = cmd_args[0]
@@ -532,7 +532,7 @@ class BountyBot:
     def cbk_echo(self, channel, cmd_args):
         if len(cmd_args) >= 2:
             target_channel = cmd_args[0]
-            target_msg = " ".join(cmd_args[1:])
+            [target_msg, _] = self.bountydb.shortlink(" ".join(cmd_args[1:]))
             
             if target_channel in self.ch.keys():
                 self.talk(self.ch[target_channel], target_msg)
